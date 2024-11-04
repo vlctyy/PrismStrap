@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global, duplicate-index
 --[[
 Bloxstrap: Executor Edition
 
@@ -122,6 +123,7 @@ local SetProps, SetChildren, InsertTheme, Create do
 		elseif typeof(args[2]) == "Instance" then
 			new.Parent = args[2]
 			SetProps(new, args[3])
+
 			SetChildren(new, args[4])
 			Children = args[4] or {}
 		end
@@ -332,7 +334,7 @@ local function CreateTween(Configs)
 end
 
 local function MakeDrag(Instance)
-	task.spawn(function()
+	--[[task.spawn(function()
 		SetProps(Instance, {
 			Active = true,
 			AutoButtonColor = false
@@ -364,7 +366,9 @@ local function MakeDrag(Instance)
 				InputOn = false
 			end
 		end)
-	end)
+	end)]]
+	Instance.Active = true
+	Instance.Draggable = true
 	return Instance
 end
 
@@ -1765,7 +1769,7 @@ function redzlib:MakeWindow(Configs)
 				Size = UDim2.new(0, 12, 0, 12),
 				Position = UDim2.new(0, -5, 0.5),
 				AnchorPoint = Vector2.new(1, 0.5),
-				Image = "rbxassetid://15637081879",
+				Image = "",
 				BackgroundTransparency = 1
 			})
 			
@@ -1799,6 +1803,21 @@ function redzlib:MakeWindow(Configs)
 			function TextBox:Visible(...) Funcs:ToggleVisible(Button, ...) end
 			function TextBox:Destroy() Button:Destroy() end
 			return TextBox
+		end
+		function Tab:AddTextList(args: table)
+			local api: table = {ObjectList = {}}
+			Tab:AddTextBox({
+				Name = args.Name,
+				Description = args.Description or '',
+				Default = args.Default or '',
+				Callback = function(val)
+					table.insert(api.ObjectList, val);
+				end;
+			});
+			api.ResetValue = function()
+				table.clear(api);
+			end;
+			return api;
 		end
 		function Tab:AddDiscordInvite(Configs)
 			local Title = Configs[1] or Configs.Name or Configs.Title or "Discord"

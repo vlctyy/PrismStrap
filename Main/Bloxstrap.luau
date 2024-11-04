@@ -1,10 +1,18 @@
 local function loadFunction(func: string) --> Automate the process of loading our functions
-	return loadfile("Bloxstrap/Main/Functions/"..func..".lua")()
+	return loadfile("Bloxstrap/Main/Functions/"..func..".luau")()
 end
 local loadFunc = loadFunction
 local cloneref = cloneref or function(...) return ... end
 local HttpService = cloneref(game.GetService(game, "HttpService"))
 local UserInputService = cloneref(game.GetService(game, "UserInputService"))
+local getgenv = getgenv or _G
+local files: table = {};
+local writefile = writefile or function(name: string, src: string): (string, string) -> ()
+	files[name] = src
+end
+local isfile: () -> () = isfile or function(file: string): (string) -> (boolean)
+	return readfile(file) ~= nil and true or false;
+end;
 
 getgenv().Bloxstrap = {}
 Bloxstrap.TouchEnabled = UserInputService.TouchEnabled
@@ -26,10 +34,10 @@ Bloxstrap.UpdateConfig = function(obj: string, val: any)
 	Bloxstrap.Config[obj] = val
 end
 Bloxstrap.SaveConfig = function() --> Saves the config
-	return writefile("Bloxstrap/Config.json", HttpService:JSONEncode(Bloxstrap.Config))
+	return writefile("Bloxstrap/Main/Configs/Default.json", HttpService:JSONEncode(Bloxstrap.Config))
 end
-if isfile("Bloxstrap/Config.json") then
-	Bloxstrap.Config = HttpService:JSONDecode(readfile("Bloxstrap/Config.json"))
+if isfile("Bloxstrap/Main/Configs/Default.json") then
+	Bloxstrap.Config = HttpService:JSONDecode(readfile("Bloxstrap/Main/Configs/Default.json"))
 	conf = Bloxstrap.Config
 end
 
@@ -41,8 +49,8 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	local GUI: table = loadFunc("GuiLibrary") --> Loading the library
 	local main: table? = GUI:MakeWindow({ --> Create our main wibdo2
 		Title = "Bloxstrap",
-		SubTitle = "Executor Edition",
-		SaveFolder = "Bloxstrap/Config/Toggles.lua"
+		SubTitle = "Mobile Edition",
+		SaveFolder = "Bloxstrap/Main/Configs"
 	})
 	main:Visible(vis)
 
@@ -114,6 +122,7 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		Options = {"Automatic", "1x", "2x", "4x"},
 		Default = Bloxstrap.Config.AntiAliasingQuality,
 		Callback = function(msaa: string)
+			if not UserInputService.TouchEnabled then return end
 			Bloxstrap.UpdateConfig("AntiAliasingQuality", msaa)
 			Bloxstrap.ToggleFFlag("FIntDebugForceMSAASamples", msaa:find("x") and msaa:gsub("x", "") or defaultMSAA)
 		end

@@ -1,0 +1,23 @@
+{
+    "robloxLsp.diagnostics.globals": [
+        "setfpscap",
+        "Bloxstrap",
+        "sethiddenproperty",
+        "writefile",
+        "isfile",
+        "readfile",
+        "cloneref",
+        "getgenv",
+        "setfflag",
+        "getfflag",
+        "loadfile",
+        "bloxstrap",
+        "bloxstrap",
+        "makefolder",
+        "Bool",
+        "props"
+    ],
+    "robloxLsp.diagnostics.disable": [
+        "undefined-type"
+    ]
+}
