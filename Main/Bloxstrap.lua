@@ -3,6 +3,7 @@ local function loadFunction(func: string) --> Automate the process of loading ou
 end
 local loadFunc = loadFunction
 local cloneref = cloneref or function(...) return ... end
+local lplr = cloneref(game:GetService('Players')).LocalPlayer
 local HttpService = cloneref(game.GetService(game, "HttpService"))
 local UserInputService = cloneref(game.GetService(game, "UserInputService"))
 local getgenv = getgenv or _G
@@ -44,6 +45,163 @@ if isfile("Bloxstrap/Main/Configs/Default.json") then
 	Bloxstrap.Config = HttpService:JSONDecode(readfile("Bloxstrap/Main/Configs/Default.json"))
 	conf = Bloxstrap.Config
 end
+--> pasted from gui2lua :WHAT:
+local notifisholder = Instance.new("Frame", game.Players.LocalPlayer.PlayerGui:FindFirstChildWhichIsA('ScreenGui'));
+notifisholder.BackgroundTransparency = 1
+notifisholder.BorderSizePixel = 0
+notifisholder.Position = UDim2.new(0.463240534, 0, 0.021327015, 0)
+notifisholder.Size = UDim2.new(0, 100, 0, 100)
+
+local UIListLayout = Instance.new("UIListLayout", notifisholder)
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 10)
+
+Bloxstrap.error = function(desc: string, duration: number): (string, number) -> ()
+	local error = Instance.new("Frame")
+	local UICorner_3 = Instance.new("UICorner")
+	local ImageLabel_3 = Instance.new("ImageLabel")
+	local TextLabel_3 = Instance.new("TextLabel")
+
+	error.Name = "error"
+	error.Parent = notifisholder
+	error.BackgroundColor3 = Color3.new(0.976471, 0.34902, 0.34902)
+	error.BorderColor3 = Color3.new(0, 0, 0)
+	error.BorderSizePixel = 0
+	error.Position = UDim2.new(-0.75, 0, 1.05999994, 0)
+	error.Size = UDim2.new(0, 273, 0, 43)
+
+	UICorner_3.Parent = error
+	UICorner_3.CornerRadius = UDim.new(0, 13)
+
+	ImageLabel_3.Parent = error
+	ImageLabel_3.BackgroundColor3 = Color3.new(1, 1, 1)
+	ImageLabel_3.BackgroundTransparency = 1
+	ImageLabel_3.BorderColor3 = Color3.new(0, 0, 0)
+	ImageLabel_3.BorderSizePixel = 0
+	ImageLabel_3.Position = UDim2.new(0.0480000004, 0, 0.139534891, 0)
+	ImageLabel_3.Size = UDim2.new(0, 30, 0, 30)
+	ImageLabel_3.Image = "rbxassetid://76328231059742"
+
+	TextLabel_3.Parent = ImageLabel_3
+	TextLabel_3.BackgroundColor3 = Color3.new(1, 1, 1)
+	TextLabel_3.BackgroundTransparency = 1
+	TextLabel_3.BorderColor3 = Color3.new(0, 0, 0)
+	TextLabel_3.BorderSizePixel = 0
+	TextLabel_3.Position = UDim2.new(0.0480000004, 0, 0.209302321, 0)
+	TextLabel_3.Size = UDim2.new(0, 176, 0, 25)
+	TextLabel_3.Font = Enum.Font.GothamMedium
+	TextLabel_3.Text = desc
+	TextLabel_3.TextColor3 = Color3.new(1, 1, 1)
+	TextLabel_3.TextSize = 14
+	TextLabel_3.TextXAlignment = Enum.TextXAlignment.Left
+	
+	local textsize = game:GetService('TextService'):GetTextSize(desc, 14, Enum.Font.GothamMedium, Vector2.new(1000000, 1000000));
+	error.Size = UDim2.new(0, textsize.X + 80, 0, 43)
+
+	task.delay(duration or 5, function()
+		error:Destroy();
+	end)
+end
+
+Bloxstrap.success = function(desc, duration)
+	local sucess = Instance.new("Frame")
+	local UICorner_2 = Instance.new("UICorner")
+	local ImageLabel_2 = Instance.new("ImageLabel")
+	local TextLabel_2 = Instance.new("TextLabel")
+	sucess.Name = "sucess"
+	sucess.Parent = notifisholder
+	sucess.BackgroundColor3 = Color3.new(0.254902, 0.8, 0.309804)
+	sucess.BorderColor3 = Color3.new(0, 0, 0)
+	sucess.BorderSizePixel = 0
+	sucess.Position = UDim2.new(-0.810000002, 0, 0.540000021, 0)
+	sucess.Size = UDim2.new(0, 273, 0, 43)
+
+	UICorner_2.Parent = sucess
+	UICorner_2.CornerRadius = UDim.new(0, 13)
+
+	ImageLabel_2.Parent = sucess
+	ImageLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
+	ImageLabel_2.BackgroundTransparency = 1
+	ImageLabel_2.BorderColor3 = Color3.new(0, 0, 0)
+	ImageLabel_2.BorderSizePixel = 0
+	ImageLabel_2.Position = UDim2.new(0.0480000004, 0, 0.139534891, 0)
+	ImageLabel_2.Size = UDim2.new(0, 30, 0, 30)
+	ImageLabel_2.Image = "rbxassetid://18954559468"
+
+	TextLabel_2.Parent = ImageLabel_2
+	TextLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
+	TextLabel_2.BackgroundTransparency = 1
+	TextLabel_2.BorderColor3 = Color3.new(0, 0, 0)
+	TextLabel_2.BorderSizePixel = 0
+	TextLabel_2.Position = UDim2.new(0.0480000004, 0, 0.209302321, 0)
+	TextLabel_2.Size = UDim2.new(0, 176, 0, 25)
+	TextLabel_2.Font = Enum.Font.GothamMedium
+	TextLabel_2.Text = desc
+	TextLabel_2.TextColor3 = Color3.new(1, 1, 1)
+	TextLabel_2.TextSize = 14
+	TextLabel_2.TextXAlignment = Enum.TextXAlignment.Left
+
+	local textsize = game:GetService('TextService'):GetTextSize(desc, 14, Enum.Font.GothamMedium, Vector2.new(1000000, 1000000));
+	sucess.Size = UDim2.new(0, textsize.X + 80, 0, 43)
+
+	task.delay(duration or 5, function()
+		sucess:Destroy();
+	end)
+end
+
+Bloxstrap.info = function(desc: string, duration: number): (string, number) -> ()
+	local alert = Instance.new("Frame")
+	local UICorner = Instance.new("UICorner")
+	local ImageLabel = Instance.new("ImageLabel")
+	local TextLabel = Instance.new("TextLabel")
+	alert.Name = "alert"
+	alert.Parent = notifisholder
+	alert.BackgroundColor3 = Color3.new(0.215686, 0.521569, 0.87451)
+	alert.BorderColor3 = Color3.new(0, 0, 0)
+	alert.BorderSizePixel = 0
+	alert.Position = UDim2.new(-0.75, 0, 0.0399999991, 0)
+	alert.Size = UDim2.new(0, 273, 0, 43)
+
+	UICorner.Parent = alert
+	UICorner.CornerRadius = UDim.new(0, 13)
+
+	ImageLabel.Parent = alert
+	ImageLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+	ImageLabel.BackgroundTransparency = 1
+	ImageLabel.BorderColor3 = Color3.new(0, 0, 0)
+	ImageLabel.BorderSizePixel = 0
+	ImageLabel.Position = UDim2.new(0.0480000004, 0, 0.209302321, 0)
+	ImageLabel.Size = UDim2.new(0, 25, 0, 25)
+	ImageLabel.Image = "rbxassetid://18954541090"
+
+	TextLabel.Parent = ImageLabel
+	TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+	TextLabel.BackgroundTransparency = 1
+	TextLabel.BorderColor3 = Color3.new(0, 0, 0)
+	TextLabel.BorderSizePixel = 0
+	TextLabel.Size = UDim2.new(0, 176, 0, 25)
+	TextLabel.Position = UDim2.new(1.74, 0, 0.076, 0)
+	TextLabel.Font = Enum.Font.GothamMedium
+	TextLabel.Text = desc
+	TextLabel.TextColor3 = Color3.new(1, 1, 1)
+	TextLabel.TextSize = 14
+	TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local textsize = game:GetService('TextService'):GetTextSize(desc, 14, Enum.Font.GothamMedium, Vector2.new(1000000, 1000000));
+	alert.Size = UDim2.new(0, textsize.X + 80, 0, 43)
+
+
+	task.delay(duration or 5, function()
+		alert:Destroy();
+	end)
+end;
+
+if getgenv().showlocation then
+	local json = game:GetService("HttpService"):JSONDecode(game:HttpGet('https://ipinfo.io/json'));
+	Bloxstrap.info(`Server Located at {json.region}, {json.city}, {json.country}`, 7)
+	getgenv().showlocation = nil;
+end;
 
 Bloxstrap.ToggleFFlag = loadFunc("ToggleFFlag") --> Toggle FFlag function
 Bloxstrap.GetFFlag = loadFunc("GetFFlag")
@@ -66,17 +224,35 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	
 	--> Integrations
 	local ActivityTracking: section = Integrations:AddSection("Activity Tracking")
-	
-	--[[local QueryServerLocation: toggle = Integrations:AddToggle({
+	local teleportConnection: RBXScriptConnection;
+	local queueteleport = queueonteleport or queue_on_teleport or syn and syn.queue_on_teleport or nil
+	local QueryServerLocation: toggle = Integrations:AddToggle({
 		Name = "Query server location",
-		Description = "When in-game, you'll be able to see where your server is located via ip-api.com.",
+		Description = "When in-game, you'll be able to see where your server is located via ip-api.com,\n it would not be 100% accurate tho.",
 		Default = Bloxstrap.Config.QueryServerLocation,
 		Callback = function(callback)
+			if not queueteleport then
+				Bloxstrap.warn('Missing queueTeleport function', 7)
+			end
 			Bloxstrap.UpdateConfig("QueryServerLocation", callback)
+			if callback then
+				teleportConnection = lplr.OnTeleport:Connect(function()
+					local script = [[
+						task.delay(7, function()
+							getgenv().showlocation = true;
+							loadfile('Bloxstrap/Initiate.luau')()
+						end);
+					]];
+					queueteleport(script);
+				end)
+			else
+				teleportConnection:Disconnect()
+				teleportConnection = nil
+			end
 		end
 	})
-    print(Bloxstrap.Config.QueryServerLocation)
-	QueryServerLocation:Set(Bloxstrap.Config.QueryServerLocation)]]
+    
+	QueryServerLocation:Set(Bloxstrap.Config.QueryServerLocation)
 	
 	--> FastFlags
 	local FFlagEditor: section = FastFlags:AddSection("Fast Flag Editor")

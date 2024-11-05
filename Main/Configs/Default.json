@@ -1,1 +1,1 @@
-{"DisablePostFX":true,"DisableTerrainTextures":true,"DisablePlayerShadows":true,"TextureQuality":"Highest","GraySky":true,"LightingTechnology":"Future (Phase 3)","AntiAliasingQuality":"4x","FPS":120}
+{"DisablePostFX":true,"DisablePlayerShadows":true,"GraySky":true,"FPS":120,"AntiAliasingQuality":"4x","DisableTerrainTextures":true,"LightingTechnology":"Future (Phase 3)","TextureQuality":"Highest","QueryServerLocation":true}

@@ -1,6 +1,6 @@
 local cloneref = cloneref or function(...) return ... end
 local HttpService = cloneref(game.GetService(game, "HttpService"))
-local function ToggleFFlag(flag: string, value: string)
+return function(flag: string, value: string): (string, string) -> ()
 	local type = type or typeof
 	if type(flag) ~= "string" then return task.spawn(error, "string expected, got "..type(flag)) end
 	local FFlag: string = Bloxstrap.TouchEnabled and flag:gsub("DFInt", ""):gsub("DFFlag", ""):gsub("FFlag", ""):gsub("FInt", ""):gsub("DFString", ""):gsub("FString", "") or flag --> Removes the keyword of the FFlag, setfflag doesn't like those so we will need to remove it.
@@ -14,5 +14,4 @@ local function ToggleFFlag(flag: string, value: string)
 		local err = isfile(errorlog) and readfile(errorlog) or "Error while loading FFlags: "
 		return writefile(errorlog, err.."\nFFlag expected, got "..FFlag)
 	end
-end
-return ToggleFFlag
+end;
