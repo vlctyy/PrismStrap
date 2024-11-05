@@ -18,16 +18,16 @@ local install: () -> () = function(config: {path: string, setup: boolean}): (tab
             writefile(`Bloxstrap/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}', true))()`);
         end;
     end;
-    writefile(`Bloxstrap/Main/Bloxstrap.luau`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Bloxstrap.luau', true))()`);
+    writefile(`Bloxstrap/Main/Bloxstrap.lua`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Bloxstrap.luau', true))()`);
     for i: number, v: table in httpservice:JSONDecode(getasync('https://api.github.com/repos/qwertyui-is-back/Bloxstrap/contents/Main/Functions')) do
         writefile(`Bloxstrap/Main/Functions/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Functions/{v.name}.luau`);
     end;
     if config.setup then
-        return loadfile('Bloxstrap/Initiate.luau')();
+        return loadfile('Bloxstrap/Initiate.lua')();
     end;
 end;
 
 install()
-if bloxstrap then
-    bloxstrap.createnotification('Sucessfully installed and executed the script.', 10);
+if Bloxstrap then
+    Bloxstrap.createnotification('Sucessfully installed and executed the script.', 10);
 end;
