@@ -49,7 +49,7 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	local GUI: table = loadFunc("GuiLibrary") --> Loading the library
 	local main: table? = GUI:MakeWindow({ --> Create our main wibdo2
 		Title = "Bloxstrap",
-		SubTitle = "Mobile Edition",
+		SubTitle = "Executor Edition",
 		SaveFolder = "Bloxstrap/Main/Configs"
 	})
 	main:Visible(vis)
