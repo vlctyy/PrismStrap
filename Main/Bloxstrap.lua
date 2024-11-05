@@ -19,13 +19,17 @@ Bloxstrap.TouchEnabled = UserInputService.TouchEnabled
 Bloxstrap.Config = {
 	--> Engine Settings
 	FPS = 120,
+	AntiAliasingQuality = "Automatic",
 	LightingTechnology = "Chosen by game",
 	TextureQuality = "Automatic",
 	DisablePlayerShadows = false,
 	DisablePostFX = false,
 	DisableTerrainTextures = false,
 	--> Fast Flags: Unbannable
-	GraySky = false
+	GraySky = false,
+	--> Fast Flags: Bannable
+	Desync = false,
+	HitregFix = false
 }
 local conf = Bloxstrap.Config
 Bloxstrap.canUpdate = false
@@ -46,6 +50,7 @@ Bloxstrap.GetFFlag = loadFunc("GetFFlag")
 Bloxstrap.start = function(vis: boolean) --> Start the script
 	vis = vis or true
 	
+	getgenv().errorlog = getgenv().errorlog or "Bloxstrap/Logs/crashlog"..HttpService:GenerateGUID(false)..".txt"
 	local GUI: table = loadFunc("GuiLibrary") --> Loading the library
 	local main: table? = GUI:MakeWindow({ --> Create our main wibdo2
 		Title = "Bloxstrap",
@@ -106,9 +111,50 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		Name = "Desync",
 		Description = "Lags your character behind on other screens.",
 		Default = Bloxstrap.Config.Desync,
-		callback = function(callback: boolean)
+		Callback = function(callback: boolean)
 			Bloxstrap.UpdateConfig("Desync", callback)
 			Bloxstrap.ToggleFFlag("DFIntS2PhysicsSenderRate", callback and 38000 or 15)
+		end
+	})
+
+	local HitregFix: toggle = FastFlags:AddToggle({
+		Name = "Hitreg Fix",
+		Description = "Makes your hitreg in most games better. (reset fflags to remove)",
+		Default = Bloxstrap.Config.HitregFix,
+		Callback = function(callback: boolean)
+			Bloxstrap.UpdateConfig("HitregFix", callback)
+			local FFlags = [[
+			{ 
+			  "DFIntCodecMaxIncomingPackets": "100",
+			  "DFIntCodecMaxOutgoingFrames": "10000",
+			  "DFIntLargePacketQueueSizeCutoffMB": "1000",
+			  "DFIntMaxProcessPacketsJobScaling": "10000",
+			  "DFIntMaxProcessPacketsStepsAccumulated": "0",
+			  "DFIntMaxProcessPacketsStepsPerCyclic": "5000",
+			  "DFIntMegaReplicatorNetworkQualityProcessorUnit": "10",
+			  "DFIntNetworkLatencyTolerance": "1",
+			  "DFIntNetworkPrediction": "120",
+			  "DFIntOptimizePingThreshold": "50",
+			  "DFIntPlayerNetworkUpdateQueueSize": "20",
+			  "DFIntPlayerNetworkUpdateRate": "60",
+			  "DFIntRaknetBandwidthInfluxHundredthsPercentageV2": "10000",
+			  "DFIntRaknetBandwidthPingSendEveryXSeconds": "1",
+			  "DFIntRakNetLoopMs": "1",
+			  "DFIntRakNetResendRttMultiple": "1",
+			  "DFIntServerPhysicsUpdateRate": "60",
+			  "DFIntServerTickRate": "60",
+			  "DFIntWaitOnRecvFromLoopEndedMS": "100",
+			  "DFIntWaitOnUpdateNetworkLoopEndedMS": "100",
+			  "FFlagOptimizeNetwork": "true",
+			  "FFlagOptimizeNetworkRouting": "true",
+			  "FFlagOptimizeNetworkTransport": "true",
+			  "FFlagOptimizeServerTickRate": "true",
+			  "FIntRakNetResendBufferArrayLength": "128"
+			}]]
+			FFlags = HttpService:JSONDecode(FFlags:gsub('"True"', "true"):gsub('"False"', "false"))
+			for i, v in FFlags do
+				Bloxstrap.ToggleFFlag(i, v)
+			end
 		end
 	})
 	
