@@ -332,7 +332,7 @@ local function CreateTween(Configs)
 end
 
 local function MakeDrag(Instance)
-	task.spawn(function()
+	--[[task.spawn(function()
 		SetProps(Instance, {
 			Active = true,
 			AutoButtonColor = false
@@ -364,7 +364,9 @@ local function MakeDrag(Instance)
 				InputOn = false
 			end
 		end)
-	end)
+	end)]]
+        Instance.Active = true
+	Instance.Draggable = true
 	return Instance
 end
 
