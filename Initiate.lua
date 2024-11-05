@@ -10,5 +10,6 @@ Credits:
 export type section = {} --> qwerty doesnt know how to use typescript :pensive:
 export type textbox = {}
 export type dropdown = {}
-local Bloxstrap: table = loadfile("Bloxstrap/Main/Bloxstrap.luau")() --> Loars all the functions required to use Bloxstrap
+export type toggle = {}
+local Bloxstrap: table = loadfile("Bloxstrap/Main/Bloxstrap.lua")() --> Loars all the functions required to use Bloxstrap
 Bloxstrap.start() --> Begins the actual script
