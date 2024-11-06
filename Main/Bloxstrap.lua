@@ -3,7 +3,8 @@ local function loadFunction(func: string) --> Automate the process of loading ou
 end
 local loadFunc = loadFunction
 local cloneref = cloneref or function(...) return ... end
-local lplr = cloneref(game:GetService('Players')).LocalPlayer
+local lplr = cloneref(game:GetService('Players')).LocalPlayer;
+local humanoid = lplr.Character:FindFirstChild('Humanoid');
 local HttpService = cloneref(game.GetService(game, "HttpService"))
 local UserInputService = cloneref(game.GetService(game, "UserInputService"))
 local getgenv = getgenv or _G
@@ -58,95 +59,96 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 10)
 
 Bloxstrap.error = function(desc: string, duration: number): (string, number) -> ()
-	local error = Instance.new("Frame")
-	local UICorner_3 = Instance.new("UICorner")
-	local ImageLabel_3 = Instance.new("ImageLabel")
-	local TextLabel_3 = Instance.new("TextLabel")
+	local alert = Instance.new("Frame")
+	local UICorner = Instance.new("UICorner")
+	local ImageLabel = Instance.new("ImageLabel")
+	local TextLabel = Instance.new("TextLabel")
+	alert.Name = "alert"
+	alert.Parent = notifisholder
+	alert.BackgroundColor3 = Color3.new(0.976471, 0.34902, 0.34902)
+	alert.BorderColor3 = Color3.new(0, 0, 0)
+	alert.BorderSizePixel = 0
+	alert.Position = UDim2.new(-0.75, 0, 0.0399999991, 0)
+	alert.Size = UDim2.new(0, 273, 0, 43)
 
-	error.Name = "error"
-	error.Parent = notifisholder
-	error.BackgroundColor3 = Color3.new(0.976471, 0.34902, 0.34902)
-	error.BorderColor3 = Color3.new(0, 0, 0)
-	error.BorderSizePixel = 0
-	error.Position = UDim2.new(-0.75, 0, 1.05999994, 0)
-	error.Size = UDim2.new(0, 273, 0, 43)
+	UICorner.Parent = alert
+	UICorner.CornerRadius = UDim.new(0, 13)
 
-	UICorner_3.Parent = error
-	UICorner_3.CornerRadius = UDim.new(0, 13)
+	ImageLabel.Parent = alert
+	ImageLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+	ImageLabel.BackgroundTransparency = 1
+	ImageLabel.BorderColor3 = Color3.new(0, 0, 0)
+	ImageLabel.BorderSizePixel = 0
+	ImageLabel.Position = UDim2.new(0.0480000004, 0, 0.209302321, 0)
+	ImageLabel.Size = UDim2.new(0, 25, 0, 25)
+	ImageLabel.Image = "rbxassetid://76328231059742"
 
-	ImageLabel_3.Parent = error
-	ImageLabel_3.BackgroundColor3 = Color3.new(1, 1, 1)
-	ImageLabel_3.BackgroundTransparency = 1
-	ImageLabel_3.BorderColor3 = Color3.new(0, 0, 0)
-	ImageLabel_3.BorderSizePixel = 0
-	ImageLabel_3.Position = UDim2.new(0.0480000004, 0, 0.139534891, 0)
-	ImageLabel_3.Size = UDim2.new(0, 30, 0, 30)
-	ImageLabel_3.Image = "rbxassetid://76328231059742"
+	TextLabel.Parent = ImageLabel
+	TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+	TextLabel.BackgroundTransparency = 1
+	TextLabel.BorderColor3 = Color3.new(0, 0, 0)
+	TextLabel.BorderSizePixel = 0
+	TextLabel.Size = UDim2.new(0, 176, 0, 25)
+	TextLabel.Position = UDim2.new(1.55, 0, 0.04, 0)
+	TextLabel.Font = Enum.Font.GothamMedium
+	TextLabel.Text = desc
+	TextLabel.TextColor3 = Color3.new(1, 1, 1)
+	TextLabel.TextSize = 14
+	TextLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-	TextLabel_3.Parent = ImageLabel_3
-	TextLabel_3.BackgroundColor3 = Color3.new(1, 1, 1)
-	TextLabel_3.BackgroundTransparency = 1
-	TextLabel_3.BorderColor3 = Color3.new(0, 0, 0)
-	TextLabel_3.BorderSizePixel = 0
-	TextLabel_3.Position = UDim2.new(0.0480000004, 0, 0.209302321, 0)
-	TextLabel_3.Size = UDim2.new(0, 176, 0, 25)
-	TextLabel_3.Font = Enum.Font.GothamMedium
-	TextLabel_3.Text = desc
-	TextLabel_3.TextColor3 = Color3.new(1, 1, 1)
-	TextLabel_3.TextSize = 14
-	TextLabel_3.TextXAlignment = Enum.TextXAlignment.Left
-	
 	local textsize = game:GetService('TextService'):GetTextSize(desc, 14, Enum.Font.GothamMedium, Vector2.new(1000000, 1000000));
-	error.Size = UDim2.new(0, textsize.X + 80, 0, 43)
+	alert.Size = UDim2.new(0, textsize.X + 80, 0, 43)
+
 
 	task.delay(duration or 5, function()
-		error:Destroy();
+		alert:Destroy();
 	end)
 end
 
 Bloxstrap.success = function(desc, duration)
-	local sucess = Instance.new("Frame")
-	local UICorner_2 = Instance.new("UICorner")
-	local ImageLabel_2 = Instance.new("ImageLabel")
-	local TextLabel_2 = Instance.new("TextLabel")
-	sucess.Name = "sucess"
-	sucess.Parent = notifisholder
-	sucess.BackgroundColor3 = Color3.new(0.254902, 0.8, 0.309804)
-	sucess.BorderColor3 = Color3.new(0, 0, 0)
-	sucess.BorderSizePixel = 0
-	sucess.Position = UDim2.new(-0.810000002, 0, 0.540000021, 0)
-	sucess.Size = UDim2.new(0, 273, 0, 43)
+	local alert = Instance.new("Frame")
+	local UICorner = Instance.new("UICorner")
+	local ImageLabel = Instance.new("ImageLabel")
+	local TextLabel = Instance.new("TextLabel")
+	alert.Name = "alert"
+	alert.Parent = notifisholder
+	alert.BackgroundColor3 = Color3.new(0.254902, 0.8, 0.309804)
+	alert.BorderColor3 = Color3.new(0, 0, 0)
+	alert.BorderSizePixel = 0
+	alert.Position = UDim2.new(-0.75, 0, 0.0399999991, 0)
+	alert.Size = UDim2.new(0, 273, 0, 43)
 
-	UICorner_2.Parent = sucess
-	UICorner_2.CornerRadius = UDim.new(0, 13)
+	UICorner.Parent = alert
+	UICorner.CornerRadius = UDim.new(0, 13)
 
-	ImageLabel_2.Parent = sucess
-	ImageLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
-	ImageLabel_2.BackgroundTransparency = 1
-	ImageLabel_2.BorderColor3 = Color3.new(0, 0, 0)
-	ImageLabel_2.BorderSizePixel = 0
-	ImageLabel_2.Position = UDim2.new(0.0480000004, 0, 0.139534891, 0)
-	ImageLabel_2.Size = UDim2.new(0, 30, 0, 30)
-	ImageLabel_2.Image = "rbxassetid://18954559468"
+	ImageLabel.Parent = alert
+	ImageLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+	ImageLabel.BackgroundTransparency = 1
+	ImageLabel.BorderColor3 = Color3.new(0, 0, 0)
+	ImageLabel.BorderSizePixel = 0
+	ImageLabel.Position = UDim2.new(0.0480000004, 0, 0.209302321, 0)
+	ImageLabel.Size = UDim2.new(0, 25, 0, 25)
+	ImageLabel.Image = "rbxassetid://18954559468"
 
-	TextLabel_2.Parent = ImageLabel_2
-	TextLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
-	TextLabel_2.BackgroundTransparency = 1
-	TextLabel_2.BorderColor3 = Color3.new(0, 0, 0)
-	TextLabel_2.BorderSizePixel = 0
-	TextLabel_2.Position = UDim2.new(0.0480000004, 0, 0.209302321, 0)
-	TextLabel_2.Size = UDim2.new(0, 176, 0, 25)
-	TextLabel_2.Font = Enum.Font.GothamMedium
-	TextLabel_2.Text = desc
-	TextLabel_2.TextColor3 = Color3.new(1, 1, 1)
-	TextLabel_2.TextSize = 14
-	TextLabel_2.TextXAlignment = Enum.TextXAlignment.Left
+	TextLabel.Parent = ImageLabel
+	TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+	TextLabel.BackgroundTransparency = 1
+	TextLabel.BorderColor3 = Color3.new(0, 0, 0)
+	TextLabel.BorderSizePixel = 0
+	TextLabel.Size = UDim2.new(0, 176, 0, 25)
+	TextLabel.Position = UDim2.new(1.55, 0, 0.04, 0)
+	TextLabel.Font = Enum.Font.GothamMedium
+	TextLabel.Text = desc
+	TextLabel.TextColor3 = Color3.new(1, 1, 1)
+	TextLabel.TextSize = 14
+	TextLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 	local textsize = game:GetService('TextService'):GetTextSize(desc, 14, Enum.Font.GothamMedium, Vector2.new(1000000, 1000000));
-	sucess.Size = UDim2.new(0, textsize.X + 80, 0, 43)
+	alert.Size = UDim2.new(0, textsize.X + 80, 0, 43)
+
 
 	task.delay(duration or 5, function()
-		sucess:Destroy();
+		alert:Destroy();
 	end)
 end
 
@@ -181,7 +183,7 @@ Bloxstrap.info = function(desc: string, duration: number): (string, number) -> (
 	TextLabel.BorderColor3 = Color3.new(0, 0, 0)
 	TextLabel.BorderSizePixel = 0
 	TextLabel.Size = UDim2.new(0, 176, 0, 25)
-	TextLabel.Position = UDim2.new(1.74, 0, 0.076, 0)
+	TextLabel.Position = UDim2.new(1.55, 0, 0.04, 0)
 	TextLabel.Font = Enum.Font.GothamMedium
 	TextLabel.Text = desc
 	TextLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -208,6 +210,11 @@ Bloxstrap.GetFFlag = loadFunc("GetFFlag")
 Bloxstrap.start = function(vis: boolean) --> Start the script
 	vis = vis or true
 	
+	if not vis then
+		setidentity(8);
+		game:GetService('CoreGui')["redz Library V5"].Enabled = false
+	end
+	
 	getgenv().errorlog = getgenv().errorlog or "Bloxstrap/Logs/crashlog"..HttpService:GenerateGUID(false)..".txt"
 	local GUI: table = loadFunc("GuiLibrary") --> Loading the library
 	local main: table? = GUI:MakeWindow({ --> Create our main wibdo2
@@ -218,7 +225,7 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	main:Visible(vis)
 
 	local Integrations: tab = main:MakeTab({"Integrations", "cross"}) --> Create our tab that will allow buttons and toggles
-	local FastFlags: tab = main:MakeTab({"FastFlags", "wrench"})
+	local FastFlags: tab = main:MakeTab({"Mods", "wrench"})
 	local EngineSettings: tab = main:MakeTab({"Engine Settings", "flag"})
 	local Appearance: tab = main:MakeTab({"Appearance", "paintbrush-2"})
 	
@@ -236,15 +243,9 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 			end
 			Bloxstrap.UpdateConfig("QueryServerLocation", callback)
 			if callback then
-				teleportConnection = lplr.OnTeleport:Connect(function()
-					local script = [[
-						task.delay(7, function()
-							getgenv().showlocation = true;
-							loadfile('Bloxstrap/Initiate.luau')()
-						end);
-					]];
-					queueteleport(script);
-				end)
+				local json = game:GetService("HttpService"):JSONDecode(game:HttpGet('https://ipinfo.io/json'));
+				Bloxstrap.info(`Server Location: {json.region}, {json.country}`, 7)
+				getgenv().showlocation = nil;
 			else
 				teleportConnection:Disconnect()
 				teleportConnection = nil
@@ -259,13 +260,28 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	local FFETextbox: textbox = FastFlags:AddTextBox({
 		Name = "Paste Fast Flags (json)",
 		Description = "Use with caution. Misusing this can lead to instability or unexpected things happening.",
-		Default = readfile("Bloxstrap/FFlags.json"),
+		Default = '[]',
 		Callback = function(call: string)
-			writefile("Bloxstrap/FFlags.json", call)
-			local fflags = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
-			for i, v in fflags do
+			--writefile("Bloxstrap/FFlags.json", call)
+			--local fflags = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
+			local flags
+			local suc, res = pcall(function()
+				return HttpService:JSONDecode(readfile('Bloxstrap/Main/Configs/Default.json'));
+			end)
+			if not suc then
+				Bloxstrap.error(res);
+				return;
+			end;
+			local flags = res
+			local flag = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
+			if flag ~= '' then
+				table.insert(flags, flag)
+			end
+			for i, v in flags do
 				Bloxstrap.ToggleFFlag(i, v)
 			end
+			writefile('Bloxstrap/Main/Configs/Default.json', HttpService:JSONEncode(flags));
+			Bloxstrap.success('Sucessfully inserted a fastflag!', 7)
 		end
 	})
 	
@@ -335,8 +351,56 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	})
 	
 	--> Engine Settings
-	local Presets: section = EngineSettings:AddSection("Presets: Rendering and Graphics")
+	local Presets: section = EngineSettings:AddSection("Presets")
+
+	local deathsoundConnection;
+	local enabled
+	local addcon = function()
+		if deathsoundConnection then
+			deathsoundConnection:Disconnect()
+			deathsoundConnection = nil
+		end
+		if not lplr.Character then
+			repeat task.wait() until lplr.Character
+		end
+		if not lplr.Character:FindFirstChild('Humanoid') then
+			repeat task.wait() until lplr.Character:FindFirstChild('Humanoid')
+		end
+		deathsoundConnection = humanoid.HealthChanged:Connect(function()
+			if humanoid.Health >= 0 then
+				print('died')
+				game:GetService("Players").LocalPlayer.PlayerScripts.RbxCharacterSounds.Enabled = false
+				local sound = Instance.new("Sound", workspace)
+				sound.SoundId =  isfile('Bloxstrap/oofsound.mp3') and getcustomasset('Bloxstrap/oofsound.mp3') or 'rbxassetid://17755696142'
+				sound.PlayOnRemove = true 
+				sound.Volume = 2
+				sound:Destroy()
+			end
+		end)
+	end
+	local olddeathsound: toggle = EngineSettings:AddToggle({
+		Name = 'Use old death sound',
+		Description = `Bring back the classic 'oof' death sound.`,
+		Default = true,
+		Callback = function(call)
+			if call then
+				addcon()
+				lplr.Character:Connect(addcon)
+			end
+		end
+	})
 	
+	lplr.CharacterAdded:Connect(function()
+		if not lplr.Character then
+			repeat task.wait() until lplr.Character
+		end
+		if not lplr.Character:FindFirstChild('Humanoid') then
+			repeat task.wait() until lplr.Character:FindFirstChild('Humanoid')
+		end
+		humanoid = lplr.Character:FindFirstChild('Humanoid')
+		game:GetService("Players").LocalPlayer.PlayerScripts.RbxCharacterSounds.Enabled = true
+	end)
+
 	local defaultMSAA = 0
 	local AntiAliasingQuality: dropdown = EngineSettings:AddDropdown({
 		Name = "Anti-aliasing quality (MSAA)",
