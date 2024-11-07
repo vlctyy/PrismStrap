@@ -373,7 +373,7 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 				local sound = Instance.new("Sound", workspace)
 				sound.SoundId =  isfile('Bloxstrap/oofsound.mp3') and getcustomasset('Bloxstrap/oofsound.mp3') or 'rbxassetid://17755696142'
 				sound.PlayOnRemove = true 
-				sound.Volume = 2
+				sound.Volume = 0.5
 				sound:Destroy()
 			end
 		end)
@@ -386,6 +386,9 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 			if call then
 				addcon()
 				lplr.CharacterAdded:Connect(addcon)
+			else
+				deathsoundConnection:Disconnect()
+				deathsoundConnection = nil
 			end
 		end
 	})
