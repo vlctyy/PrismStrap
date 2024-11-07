@@ -385,7 +385,7 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		Callback = function(call)
 			if call then
 				addcon()
-				lplr.Character:Connect(addcon)
+				lplr.CharacterAdded:Connect(addcon)
 			end
 		end
 	})
