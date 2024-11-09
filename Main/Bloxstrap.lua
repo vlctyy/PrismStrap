@@ -19,6 +19,7 @@ end;
 getgenv().Bloxstrap = {}
 Bloxstrap.TouchEnabled = UserInputService.TouchEnabled
 Bloxstrap.Config = {
+	OofSound = false,
 	--> Engine Settings
 	FPS = 120,
 	AntiAliasingQuality = "Automatic",
@@ -238,17 +239,11 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		Description = "When in-game, you'll be able to see where your server is located via ip-api.com,\n it would not be 100% accurate tho.",
 		Default = Bloxstrap.Config.QueryServerLocation,
 		Callback = function(callback)
-			if not queueteleport then
-				Bloxstrap.warn('Missing queueTeleport function', 7)
-			end
 			Bloxstrap.UpdateConfig("QueryServerLocation", callback)
 			if callback then
 				local json = game:GetService("HttpService"):JSONDecode(game:HttpGet('https://ipinfo.io/json'));
 				Bloxstrap.info(`Server Location: {json.region}, {json.country}`, 7)
 				getgenv().showlocation = nil;
-			else
-				teleportConnection:Disconnect()
-				teleportConnection = nil
 			end
 		end
 	})
@@ -266,12 +261,13 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 			--local fflags = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
 			local flags
 			local suc, res = pcall(function()
-				return HttpService:JSONDecode(readfile('Bloxstrap/Main/Configs/Default.json'));
+				return HttpService:JSONDecode(readfile('Bloxstrap/FFlags.json'));
 			end)
 			if not suc then
 				Bloxstrap.error(res);
 				return;
 			end;
+			local oldflags = res
 			local flags = res
 			local flag = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
 			if flag ~= '' then
@@ -280,8 +276,8 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 			for i, v in flags do
 				Bloxstrap.ToggleFFlag(i, v)
 			end
-			writefile('Bloxstrap/Main/Configs/Default.json', HttpService:JSONEncode(flags));
-			Bloxstrap.success('Sucessfully inserted a fastflag!', 7)
+			writefile('Bloxstrap/FFlags.json', HttpService:JSONEncode(flags));
+			if oldflags:lower() ~= HttpService:JSONEncode(flags):lower() then Bloxstrap.success('Sucessfully inserted a fastflag!', 7) end
 		end
 	})
 	
@@ -297,7 +293,67 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		end
 	})
 
-	local Presets: section = FastFlags:AddSection("⚠️Presets: Bannable⚠️")
+	local updatedfonts: table = {};
+	local font: string = 'Arimo'
+	local fonttdropdown: dropdown
+	local uriekfqjkfjqekf = false
+	local usecustomfont: toggle
+	local fontchanger: toggle = FastFlags:AddToggle({
+		Name = 'Use custom font',
+		Default = Bloxstrap.Config.customfonttoggle or false,
+		Callback = function(call: boolean): () -> ()
+			uriekfqjkfjqekf = call
+			Bloxstrap.UpdateConfig('customfonttoggle', call);
+			if call then
+				game.DescendantAdded:Connect(function(v)
+					if v.ClassName and (v.ClassName == 'TextLabel' or v.ClassName == 'TextButton') and uriekfqjkfjqekf and font ~= nil then
+						local currfont = font
+						table.insert(updatedfonts, {inst = v, font = tostring(v.Font):split('.')[3], connection = v:GetPropertyChangedSignal('Font'):Connect(function()
+							v.Font = Enum.Font[currfont]
+						end)})
+						v.Font = Enum.Font[currfont]
+					end
+				end)
+				for i,v in game:GetDescendants() do
+					if v.ClassName and (v.ClassName == 'TextLabel' or v.ClassName == 'TextButton') and font ~= nil then
+						local currfont = font
+						table.insert(updatedfonts, {inst = v, font = tostring(v.Font):split('.')[3], connection = v:GetPropertyChangedSignal('Font'):Connect(function()
+							v.Font = Enum.Font[currfont]
+						end)})
+						v.Font = Enum.Font[currfont]
+					end;
+				end
+			else
+				for i,v in updatedfonts do
+					v.connection:Disconnect()
+					v.connection = nil
+					v.inst.Font = Enum.Font[v.font]
+				end
+				table.clear(updatedfonts)
+			end
+		end
+	})
+	local list: table = {}
+	for i,v in Enum.Font:GetEnumItems() do
+		table.insert(list, tostring(v):split('.')[3]);
+	end
+	fonttdropdown = FastFlags:AddDropdown({
+		Name = "Fonts",
+		Description = "",
+		Options = list,
+		Default = Bloxstrap.Config.customfontroblox or '',
+		Callback = function(qweqweq: string)
+			Bloxstrap.UpdateConfig('customfontroblox', qweqweq);
+			font = qweqweq
+			if uriekfqjkfjqekf then
+				for i,v in updatedfonts do
+					v.inst.Font = Enum.Font.Arial
+				end
+			end
+		end
+	})
+
+	local Presets: section = FastFlags:AddSection("Presets: Bannable")
 	
 	local Desync: toggle = FastFlags:AddToggle({
 		Name = "Desync",
@@ -349,13 +405,18 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 			end
 		end
 	})
-	
+
 	--> Engine Settings
 	local Presets: section = EngineSettings:AddSection("Presets")
 
 	local deathsoundConnection;
 	local enabled
+	local notified = false
 	local addcon = function()
+		if getcustomasset == nil and not notified then
+			notified = true
+			return Bloxstrap.error('Missing getcustomasset function', 7);
+		end
 		if deathsoundConnection then
 			deathsoundConnection:Disconnect()
 			deathsoundConnection = nil
@@ -366,12 +427,14 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		if not lplr.Character:FindFirstChild('Humanoid') then
 			repeat task.wait() until lplr.Character:FindFirstChild('Humanoid')
 		end
+		repeat task.wait() until humanoid.Parent ~= nil
+		print('real')
 		deathsoundConnection = humanoid.HealthChanged:Connect(function()
-			if humanoid.Health >= 0 then
+			if humanoid.Health <= 0 then
 				print('died')
 				game:GetService("Players").LocalPlayer.PlayerScripts.RbxCharacterSounds.Enabled = false
 				local sound = Instance.new("Sound", workspace)
-				sound.SoundId =  isfile('Bloxstrap/oofsound.mp3') and getcustomasset('Bloxstrap/oofsound.mp3') or 'rbxassetid://17755696142'
+				sound.SoundId =  isfile('Bloxstrap/oofsound.mp3') and getcustomasset('Bloxstrap/oofsound.mp3')
 				sound.PlayOnRemove = true 
 				sound.Volume = 0.5
 				sound:Destroy()
@@ -380,9 +443,10 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	end
 	local olddeathsound: toggle = EngineSettings:AddToggle({
 		Name = 'Use old death sound',
-		Description = `Bring back the classic 'oof' death sound.`,
-		Default = true,
+		Description = "Bring back the classic 'oof' death sound.",
+		Default = Bloxstrap.Config.OofSound,
 		Callback = function(call)
+			Bloxstrap.UpdateConfig("OofSound", call)
 			if call then
 				addcon()
 				lplr.CharacterAdded:Connect(addcon)
@@ -450,23 +514,26 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		end
 	})
 	
+	
 	local origValue = Bloxstrap.GetFFlag("DFIntTaskSchedulerTargetFps")
 	local FramerateLimit: textbox = EngineSettings:AddTextBox({
 		Name = "Framerate limit",
 		Description = "Set to 0 if you want to use Roblox's native framerate unlocker.",
 		Default = Bloxstrap.Config.FPS,
 		Callback = function(fps: number)
-			if type(fps) == "string" then fps = tonumber(fps) end
-			Bloxstrap.UpdateConfig("FPS", fps)
+			if fps == nil then return end;
+			if type(fps) == "string" then fps = tonumber(fps) end;
+			Bloxstrap.UpdateConfig("FPS", fps);
+			Bloxstrap.ToggleFFlag('FFlagDebugDisplayFPS', fps >= 70);
 			if fps > 0 then
-				setfpscap(fps)
-				Bloxstrap.ToggleFFlag("DFIntTaskSchedulerTargetFps", fps)
+				setfpscap(fps);
+				Bloxstrap.ToggleFFlag("DFIntTaskSchedulerTargetFps", fps);
 			else
-				setfpscap(9e9)
-				Bloxstrap.ToggleFFlag("DFIntTaskSchedulerTargetFps", origValue)
-			end
-		end
-	})
+				setfpscap(9e9);
+				Bloxstrap.ToggleFFlag("DFIntTaskSchedulerTargetFps", origValue);
+			end;
+		end;
+	});
 	
 	local usingVoxel = Bloxstrap.GetFFlag("DFFlagDebugRenderForceTechnologyVoxel")
 	local usingShadowMap = Bloxstrap.GetFFlag("DFFlagDebugRenderForceFutureIsBrightPhase2")
@@ -506,7 +573,7 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		Default = Bloxstrap.Config.LightingTechnology,
 		Callback = function(light: string)
 			Bloxstrap.UpdateConfig("LightingTechnology", light)
-			changeLighting(light)
+			pcall(changeLighting, light)
 		end
 	})
 	
@@ -559,3 +626,4 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	Bloxstrap.canUpdate = true
 end
 return Bloxstrap --> Returns a table with all our functions. Feel free to add your own!
+--> suck my dick nigger
