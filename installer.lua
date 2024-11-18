@@ -7,6 +7,7 @@ local httpservice = cloneref(game:GetService('HttpService'))
 local getasync: () -> () = function(string: string): (string) -> (string)
     return game:HttpGet(string, true)
 end
+if isfolder('Bloxstrap') then delfolder('Bloxstrap') end
 makefolder('Bloxstrap');
 makefolder('Bloxstrap/Main');
 makefolder('Bloxstrap/Main/Functions');
