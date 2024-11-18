@@ -29,5 +29,5 @@ local install: () -> () = function(config: {path: string, setup: boolean}): (tab
     end;
 end;
 
-install({setup = true})
+install(getgenv().autosetup or {})
 print('successfully installed.')
