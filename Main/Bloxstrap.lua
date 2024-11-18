@@ -255,7 +255,7 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 	local FFETextbox: textbox = FastFlags:AddTextBox({
 		Name = "Paste Fast Flags (json)",
 		Description = "Use with caution. Misusing this can lead to instability or unexpected things happening.",
-		Default = '[]',
+		Default = '',
 		Callback = function(call: string)
 			--writefile("Bloxstrap/FFlags.json", call)
 			--local fflags = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
@@ -535,9 +535,9 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		end;
 	});
 	
-	local usingVoxel = Bloxstrap.GetFFlag("DFFlagDebugRenderForceTechnologyVoxel")
-	local usingShadowMap = Bloxstrap.GetFFlag("DFFlagDebugRenderForceFutureIsBrightPhase2")
-	local usingFuture = Bloxstrap.GetFFlag("DFFlagDebugRenderForceFutureIsBrightPhase3")
+	--local usingVoxel = Bloxstrap.GetFFlag("DFFlagDebugRenderForceTechnologyVoxel")
+	--local usingShadowMap = Bloxstrap.GetFFlag("DFFlagDebugRenderForceFutureIsBrightPhase2")
+	--local usingFuture = Bloxstrap.GetFFlag("DFFlagDebugRenderForceFutureIsBrightPhase3")
 	local function changeLighting(lighting: string)
 		sethiddenproperty(game.Lighting, "Technology", lighting:find("Voxel") and "Voxel" or lighting:find("Shadow Map") and "ShadowMap" or "Future")
 		if not UserInputService.TouchEnabled then
@@ -558,9 +558,9 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 				Bloxstrap.ToggleFFlag("DFFlagDebugRenderForceFutureIsBrightPhase3", true)
 				return
 			elseif str:find("chosen") then
-				Bloxstrap.ToggleFFlag("DFFlagDebugRenderForceTechnologyVoxel", usingVoxel)
-				Bloxstrap.ToggleFFlag("DFFlagDebugRenderForceFutureIsBrightPhase2", usingShadowMap)
-				Bloxstrap.ToggleFFlag("DFFlagDebugRenderForceFutureIsBrightPhase3", usingFuture)
+				Bloxstrap.ToggleFFlag("DFFlagDebugRenderForceTechnologyVoxel", false)
+				Bloxstrap.ToggleFFlag("DFFlagDebugRenderForceFutureIsBrightPhase2", false)
+				Bloxstrap.ToggleFFlag("DFFlagDebugRenderForceFutureIsBrightPhase3", false)
 				return
 			end
 		end
