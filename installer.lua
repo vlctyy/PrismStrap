@@ -28,7 +28,5 @@ local install: () -> () = function(config: {path: string, setup: boolean}): (tab
     end;
 end;
 
-install()
-if Bloxstrap then
-    Bloxstrap.createnotification('Sucessfully installed and executed the script.', 10);
-end;
+install(getgenv().autosetup or {})
+print('successfully installed.')
