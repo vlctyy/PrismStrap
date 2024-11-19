@@ -4,7 +4,7 @@ A script that attempts to recreate Bloxstrap, so you can use FFlags without inst
 ## Installation
 ```lua
 getgenv().autosetup = {
-    path = 'nigger', --> doesnt work rn
+    path = 'Bloxstrap', --> doesnt work rn
     setup = true --> init after installaiton
 }
 loadstring(game.HttpGet(game, 'https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/installer.lua', true))()
