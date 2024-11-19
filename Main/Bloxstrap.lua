@@ -1,5 +1,5 @@
 local function loadFunction(func: string) --> Automate the process of loading our functions
-	return loadfile("Bloxstrap/Main/Functions/"..func..".lua")()
+	return loadstring(game:HttpGet("https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Functions/"..func..".lua"))()
 end
 local loadFunc = loadFunction
 local cloneref = cloneref or function(...) return ... end
