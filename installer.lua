@@ -1,7 +1,7 @@
 local cloneref: () -> () = cloneref or function(...): (...any) -> (...any) return (...) end
 local config: table = {
     path = '';
-    setup = getgenv().autoexecute;
+    setup = true;
 };
 local httpservice = cloneref(game:GetService('HttpService'))
 local getasync: () -> () = function(string: string): (string) -> (string)
@@ -30,4 +30,5 @@ local install: () -> () = function(config: {path: string, setup: boolean}): (tab
 end;
 
 install(getgenv().autosetup or {})
+writefile("Bloxstrap/Main/Configs/Default.json", "{}")
 print('successfully installed.')
