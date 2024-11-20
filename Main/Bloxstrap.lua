@@ -347,11 +347,6 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 		Callback = function(qweqweq: string)
 			Bloxstrap.UpdateConfig('customfontroblox', qweqweq);
 			font = qweqweq
-			if uriekfqjkfjqekf then
-				for i,v in updatedfonts do
-					v.inst.Font = Enum.Font.Arial
-				end
-			end
 		end
 	})
 
