@@ -73,7 +73,7 @@ local redzlib = {
 	Options = {},
 	Flags = {},
 	Tabs = {},
-	Icons = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/refs/heads/main/Icons.Lua"))()
+	Icons = {}
 }
 
 local ViewportSize = workspace.CurrentCamera.ViewportSize
@@ -540,23 +540,7 @@ end
 
 -- /////////// --
 function redzlib:GetIcon(index)
-	if type(index) ~= "string" or index:find("rbxassetid://") or #index == 0 then
-		return index
-	end
-	
-	local firstMatch = nil
-	index = string.lower(index):gsub("lucide", ""):gsub("-", "")
-	
-	for Name, Icon in self.Icons do
-		Name = Name:gsub("lucide", ""):gsub("-", "")
-		if Name == index then
-			return Icon
-		elseif not firstMatch and Name:find(index, 1, true) then
-			firstMatch = Icon
-		end
-	end
-	
-	return firstMatch or index
+	return ''
 end
 
 function redzlib:SetTheme(NewTheme)
