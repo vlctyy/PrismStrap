@@ -328,9 +328,10 @@ Bloxstrap.start = function(vis: boolean) --> Start the script
 				for i,v in updatedfonts do
 					v.connection:Disconnect()
 					v.connection = nil
+					task.wait();
 					v.inst.Font = Enum.Font[v.font]
-				end
-				table.clear(updatedfonts)
+				end;
+				table.clear(updatedfonts);
 			end
 		end
 	})
