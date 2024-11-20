@@ -1,8 +1,4 @@
 local cloneref: () -> () = cloneref or function(...): (...any) -> (...any) return (...) end
-local config: table = {
-    path = '';
-    setup = true;
-};
 local httpservice = cloneref(game:GetService('HttpService'))
 local getasync: () -> () = function(string: string): (string) -> (string)
     return game:HttpGet(string, true)
