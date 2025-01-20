@@ -27,7 +27,7 @@ local install: () -> () = function(config: {path: string, setup: boolean}): (tab
     writefile("Bloxstrap/Main/Configs/Default.json", "{}")
 end;
 
-if (not isfolder('Bloxstrap') or #listfiles('Bloxstrap') <= 6) then
+if (not isfolder('Bloxstrap') or #listfiles('Bloxstrap') <= 5) then
     install({})
 end
 
