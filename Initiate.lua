@@ -17,7 +17,7 @@ local install: () -> () = function(config: {path: string, setup: boolean}): (tab
         if v.name:find('.lua') then
             writefile(`Bloxstrap/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}', true))()`);
         elseif v.name:find('.mp3') or v.name:find('.png') then
-            writefile(`Bloxstrap/{v.name}`, game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}'));
+            writefile(`Bloxstrap/{v.name}`, game:HttpGet(`https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}`));
         end;
     end;
     writefile(`Bloxstrap/Main/Bloxstrap.lua`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Bloxstrap.lua', true))()`);
