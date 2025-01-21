@@ -44,7 +44,10 @@ getgenv().Bloxstrap = {}
     customfonttoggle = false,
     customfontroblox = '',
     customtopbar = false,
-    CustomFont = ''
+    CustomFont = '',
+    CameraSensitivity = 1,
+    CrosshairImage = '',
+    TouchUiSize = 1
 }, {
     __index = function(s, i)
         s[i] = false
@@ -90,10 +93,10 @@ if not vis then
 end
 
 getgenv().errorlog = getgenv().errorlog or "Bloxstrap/Logs/crashlog"..HttpService:GenerateGUID(false)..".txt"
-local GUI: table = loadFunc("GuiLibrary") --> Loading the library
+local GUI: table = loadfile('Bloxstrap/Main/Functions/GuiLibrary.lua')() --> Loading the library
 local main: table? = GUI:MakeWindow({ --> Create our main wibdo2
     Title = "Bloxstrap",
-    SubTitle = "Executor Edition",
+    SubTitle = "",
     SaveFolder = "Bloxstrap/Main/Configs"
 })
 main:Visible(vis)
@@ -117,6 +120,7 @@ local derendering = Appearance:AddToggle({
     Default = Bloxstrap.Config.DeRendering,
     Callback = function(call)
         Bloxstrap.UpdateConfig('DeRendering', call)
+        Bloxstrap.ToggleFFlag('FFlagDisablePostFx', call)
         if call then
             repeat
                 for i,v in players:GetPlayers() do
@@ -134,6 +138,23 @@ local derendering = Appearance:AddToggle({
     end
 })
 
+local camerascript = require and require(lplr.PlayerScripts.PlayerModule.CameraModule.CameraInput) or {}
+local old = camerascript.getRotation
+local camsensitivity = Appearance:AddSlider({
+    Name = 'Camera Sensitivity',
+    Min = 1,
+    Max = 7,
+    Increase = 0.1,
+    Default = Bloxstrap.Config.CameraSensitivity,
+    Callback = function(val)
+        Bloxstrap.UpdateConfig('CameraSensitivity', val)
+        camerascript.getRotation = function(...)
+            return old(...) * val
+        end
+    end
+})  
+
+local funnycon
 local guisets = {}
 local guiscale = Appearance:AddToggle({
     Name = 'GUIScaler',
@@ -142,12 +163,24 @@ local guiscale = Appearance:AddToggle({
     Callback = function(call)
         Bloxstrap.UpdateConfig('GUIScale', call)
         if call then
-            for i,v in lplr.PlayerGui:GetChildren() do
-                if v.Name == 'TouchGui' then continue end
-                local oldui = v:FindFirstChildWhichIsA('UIScale')
+            funnycon = lplr.PlayerGui.ChildAdded: Connect(function(v)
+                if v.Name == 'TouchGui' then return end
+                local oldui = v:FindFirstChildWhichIsA('UIScale', true)
                 if oldui then
                     table.insert(guisets, {oldscale = oldui.Scale, scaler = oldui})
-                    oldui.Scale -= 0.3
+                    oldui.Scale = 0.5
+                else
+                    local uiscale = Instance.new('UIScale', v)
+                    uiscale.Scale = 0.7
+                    table.insert(guisets, {oldscale = 9e9, scaler = uiscale})
+                end
+           end)
+            for i,v in lplr.PlayerGui:GetChildren() do
+                if v.Name == 'TouchGui' then continue end
+                local oldui = v:FindFirstChildWhichIsA('UIScale', true)
+                if oldui then
+                    table.insert(guisets, {oldscale = oldui.Scale, scaler = oldui})
+                    oldui.Scale = 0.5
                 else
                     local uiscale = Instance.new('UIScale', v)
                     uiscale.Scale = 0.7
@@ -155,6 +188,7 @@ local guiscale = Appearance:AddToggle({
                 end
             end
             for i,v in game.CoreGui:GetChildren() do
+          
                 local oldui = v:FindFirstChildWhichIsA('UIScale')
                 if oldui then
                     table.insert(guisets, {oldscale = oldui.Scale, scaler = oldui})
@@ -166,6 +200,7 @@ local guiscale = Appearance:AddToggle({
                 end
             end
         else
+            pcall(function() funnycon:Disconnect() funnycon = nil end)
             for i,v in guisets do
                 if v.oldscale == 9e9 then
                     v.scaler:Destroy()
@@ -178,17 +213,144 @@ local guiscale = Appearance:AddToggle({
     end
 })
 
+local touchuuval = 1.2
+local touchuiscale
+local touchui = Appearance:AddToggle({
+    Name = 'TouchGui Size',
+    Description = 'Increases your touchgui size.',
+    Default = Bloxstrap.Config.TouchUI,
+    Callback = function(call)
+        if call then
+            touchuiscale = Instance.new('UIScale', lplr.PlayerGui.TouchGui)
+            touchuiscale.Scale = touchuuval
+        else
+            if touchuiscale then
+                touchuiscale:Destroy()
+                touchuiscale = nil
+            end
+        end
+    end
+})
+Appearance:AddSlider({
+    Name = 'Scale',
+    Min = 1,
+    Max = 2,
+    Increase = 0.1,
+    Callback = function(val)
+        Bloxstrap.UpdateConfig('TouchUiSize', val)
+        touchuuval = val
+        if touchuiscale then
+            touchuiscale.Scale = val
+        end
+    end
+})
+
+local chosenimage = ''
+local imagelabel
+local screengui = Instance.new('ScreenGui', game.CoreGui)
+screengui.IgnoreGuiInset = true
+local crosshaircons = {}
+local crosshair = Appearance:AddToggle({
+    Name = 'Crosshair',
+    Default = Bloxstrap.Config.Crosshair,
+    Callback = function(call)
+        Bloxstrap.UpdateConfig('Crosshair', call)
+        if call then
+            imagelabel = Instance.new('ImageLabel', screengui)
+            imagelabel.Size = UDim2.new(0, 19, 0, 19)
+            imagelabel.AnchorPoint = Vector2.new(0.5, 0.5)
+            imagelabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+            imagelabel.BackgroundTransparency = 1
+            imagelabel.Image = chosenimage
+            imagelabel.Visible = true
+            repeat
+              task.wait()
+              if not isalive() then continue end
+              local mag = (lplr.Character.Head.Position - workspace.CurrentCamera.CFrame.Position).magnitude
+              imagelabel.Visible = (mag <= 3)
+            until not Bloxstrap.Config.Crosshair
+        else
+            for i,v in crosshaircons do
+                crosshaircons:Disconnect()
+            end
+            table.clear(crosshaircons)
+            if imagelabel then
+                imagelabel:Destroy()
+            end
+        end
+    end
+})
+Appearance:AddDropdown({
+    Name = 'Image',
+    Options = listfiles('Bloxstrap/Images'),
+    Default = Bloxstrap.Config.CrosshairImage,
+    Callback = function(val)
+        Bloxstrap.UpdateConfig('CrosshairImage', val)
+        chosenimage = getcustomasset(val)
+        if imagelabel then
+            imagelabel.Image = chosenimage
+        end
+    end
+})
 Appearance:AddSection('Customizations')
 local gradients = {}
+local fakerobloxbutton
+local fakerobloxbutton = Instance.new('TextButton', game:GetService('CoreGui').TopBarApp.UnibarLeftFrame)
+fakerobloxbutton.BorderSizePixel = 0
+fakerobloxbutton.BackgroundTransparency = 0.07
+fakerobloxbutton.Text = ''
+fakerobloxbutton.Name = 'funni'
+fakerobloxbutton.ZIndex = 999
+fakerobloxbutton.BackgroundColor3 = Color3.new()
+fakerobloxbutton.Size = UDim2.new(0, 44, 0, 44)
+fakerobloxbutton.Position = UDim2.new(0, -52, 0, 0)
+fakerobloxbutton.Visible = false
+fakerobloxbutton.MouseButton1Click:Connect(function()
+    firesignal(game:GetService("CoreGui").TopBarApp.MenuIconHolder.TriggerPoint.Background.Activated)
+end)
+
+local imagelabel = Instance.new('ImageLabel', fakerobloxbutton)
+imagelabel.Size = UDim2.new(0, 22, 0, 22)
+imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
+imagelabel.BackgroundTransparency = 1
+imagelabel.Image = getcustomasset('Bloxstrap/icon.png')
+imagelabel.ImageColor3 = Color3.new(1, 1, 1)
+
+Instance.new('UICorner', fakerobloxbutton).CornerRadius = UDim.new(1, 0)
+
+
 local customtopbar = Appearance:AddToggle({
     Name = 'Bloxstrap Topbars',
     Description = 'Gives you a cool unique topbar.',
     Default = Bloxstrap.Config.customtopbar,
     Callback = function(call)
+        game:GetService("CoreGui").TopBarApp.MenuIconHolder.TriggerPoint.Visible = not call
+        fakerobloxbutton.Visible = call 
         Bloxstrap.UpdateConfig('customtopbar', call)
-        local topbarinstances = {game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat.IntegrationIconFrame.IntegrationIcon, game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].nine_dot.IntegrationIconFrame.IntegrationIcon.Overflow, game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].nine_dot.IntegrationIconFrame.IntegrationIcon.Close, game:GetService("CoreGui").TopBarApp.MenuIconHolder.TriggerPoint.Background.ScalingIcon}
-       pcall(function() game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat["5"].Badge.Visible = not call end)
+        local topbarinstances = {game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat.IntegrationIconFrame.IntegrationIcon, game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].nine_dot.IntegrationIconFrame.IntegrationIcon.Overflow, game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].nine_dot.IntegrationIconFrame.IntegrationIcon.Close, imagelabel}
         if call then
+            woahwoah = game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat["5"].ChildAdded:Connect(function(v)
+                grad = Instance.new('UIGradient', v)
+                grad.Rotation = -60
+                grad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(219, 89, 171)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(61, 56, 192))
+                })
+                v.Text.TextColor3 = Color3.new()
+                v.Text.TextTruncate = 'None'
+                table.insert(gradients, grad)
+            end)
+            if game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat["5"]:FindFirstChild('Badge') then
+                grad = Instance.new('UIGradient', game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat["5"]:FindFirstChild('Badge'))
+                game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat["5"]:FindFirstChild('Badge').Text.TextTruncate = 'None'
+                game:GetService("CoreGui").TopBarApp.UnibarLeftFrame.UnibarMenu["2"]["3"].chat["5"]:FindFirstChild('Badge').Text.TextColor3 = Color3.new()
+                grad.Rotation = -60
+                grad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(219, 89, 171)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(61, 56, 192))
+                })
+                table.insert(gradients, grad)
+            end
             for i,v in topbarinstances do
                 grad = Instance.new('UIGradient', v)
                 grad.Rotation = 60
@@ -199,7 +361,9 @@ local customtopbar = Appearance:AddToggle({
                 table.insert(gradients, grad)
             end
         else
-            for i,v in gradients do v:Destroy() end
+            --imagelabel.Image = game:GetService("CoreGui").TopBarApp.MenuIconHolder.TriggerPoint.Background.ScalingIcon.Image
+            pcall(function() woahwoah:Disconnect() end)
+            for i,v in gradients do pcall(function() v:Destroy() end) end
         end
     end
 })
@@ -212,11 +376,13 @@ local rotatinghotbar = Appearance:AddToggle({
         Bloxstrap.UpdateConfig('RotatingHotbar', call)
         if call then
             repeat
-                game:GetService("CoreGui").TopBarApp.MenuIconHolder.TriggerPoint.Background.ScalingIcon.Rotation += 1
+                game:GetService("CoreGui").TopBarApp.MenuIconHolder.TriggerPoint.Background.ScalingIcon.Rotation += 1.5
+                imagelabel.Rotation += 1.5
                 task.wait(0)
             until not Bloxstrap.Config.RotatingHotbar
         else
             game:GetService("CoreGui").TopBarApp.MenuIconHolder.TriggerPoint.Background.ScalingIcon.Rotation = 0
+            imagelabel.Rotation = 0
         end
     end
 })
@@ -226,32 +392,17 @@ local ActivityTracking: section = Integrations:AddSection("Activity Tracking")
 
 --> FastFlags
 local FFlagEditor: section = FastFlags:AddSection("Fast Flag Editor")
+local usefilepath = false
 local FFETextbox: textbox = FastFlags:AddTextBox({
     Name = "Paste Fast Flags (json)",
     Description = "Use with caution. Misusing this can lead to instability or unexpected things happening.",
-    Default = '',
+    Default = readfile('Bloxstrap/FFlags.json'),
     Callback = function(call: string)
-        --writefile("Bloxstrap/FFlags.json", call)
-        --local fflags = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
-        local flags
-        local suc, res = pcall(function()
-            return HttpService:JSONDecode(readfile('Bloxstrap/FFlags.json'));
-        end)
-        if not suc then
-            Bloxstrap.error('Failed to insert fast flags -> '..res, 10);
-            return;
-        end;
-        local oldflags = res
-        local flags = res
-        local flag = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
-        if flag ~= '' then
-            table.insert(flags, flag)
+        writefile("Bloxstrap/FFlags.json", call)
+        local fflags = HttpService:JSONDecode(call:gsub('"True"', "true"):gsub('"False"', "false"))
+        for i,v in fflags do
+            Bloxstrap.ToggleFFlag(i,v)
         end
-        for i, v in flags do
-            Bloxstrap.ToggleFFlag(i, v)
-        end
-        writefile('Bloxstrap/FFlags.json', HttpService:JSONEncode(flags));
-        if oldflags:lower() ~= HttpService:JSONEncode(flags):lower() then Bloxstrap.success('Sucessfully inserted a fastflag!', 7) end
     end
 })
 
@@ -271,40 +422,57 @@ local updatedfonts: table = {};
 local font: string = 'Arimo'
 local fonttdropdown: dropdown
 local uriekfqjkfjqekf = false
-local filecud
+local currentcustomfont = nil
+local funnycon84
 local usecustomfont: toggle
 local fontchanger: toggle = FastFlags:AddToggle({
     Name = 'Change Game Fonts',
     Description = 'Changes The Game font to the one you chose',
-    Default = Bloxstrap.Config.customfonttoggle or false,
     Callback = function(call: boolean): () -> ()
     uriekfqjkfjqekf = call
     Bloxstrap.UpdateConfig('customfonttoggle', call);
     if call then
-        game.DescendantAdded:Connect(function(v)
-            if v.ClassName and (v.ClassName == 'TextLabel' or v.ClassName == 'TextButton') and uriekfqjkfjqekf and font ~= nil then
+        print(currentcustomfont)
+        funnycon84 = game.DescendantAdded:Connect(function(v)
+            if v.ClassName and (v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' or v.ClassName == 'TextBox') and uriekfqjkfjqekf and font ~= nil then
                 local currfont = font
                 table.insert(updatedfonts, {inst = v, font = tostring(v.Font):split('.')[3], connection = v:GetPropertyChangedSignal('Font'):Connect(function()
-                v.Font = Enum.Font[currfont]
+                if currentcustomfont then
+                    v.FontFace = currentcustomfont
+                else
+                    v.Font = Enum.Font[currfont]
+                end
                 end)})
-                v.Font = Enum.Font[currfont]
+                if currentcustomfont then
+                    v.FontFace = currentcustomfont
+                else
+                    v.Font = Enum.Font[currfont]
+                end
             end
         end)
         for i,v in game:GetDescendants() do
-            if v.ClassName and (v.ClassName == 'TextLabel' or v.ClassName == 'TextButton') and font ~= nil then
+            if v.ClassName and (v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' or v.ClassName == 'TextBox') and font ~= nil then
                 local currfont = font
                 pcall(function() table.insert(updatedfonts, {inst = v, font = tostring(v.Font):split('.')[3], connection = v:GetPropertyChangedSignal('Font'):Connect(function()
-                v.Font = Enum.Font[currfont]
+                    if currentcustomfont then
+                        v.FontFace = currentcustomfont
+                    else
+                        v.Font = Enum.Font[currfont]
+                    end
                 end)}) end)
-                v.Font = Enum.Font[currfont]
+                if currentcustomfont then
+                    v.FontFace = currentcustomfont
+                else
+                    v.Font = Enum.Font[currfont]
+                end
             end;
         end
     else
-        for i,v in updatedfonts do
-            v.connection:Disconnect()
-            v.connection = nil
-            task.wait();
-            v.inst.Font = Enum.Font[v.font]
+            pcall(function() funnycon84:Disconnect() end)
+            for i,v in updatedfonts do
+                v.connection:Disconnect()
+                v.connection = nil
+                v.inst.Font = Enum.Font[v.font]
             end;
             table.clear(updatedfonts);
         end
@@ -324,17 +492,44 @@ fonttdropdown = FastFlags:AddDropdown({
     font = qweqweq
     end
 })
+local fontlists = {'none'}
+for i,v in listfiles('Bloxstrap/Main/Fonts') do
+    if v:find('.ttf') then
+        table.insert(fontlists, v)
+    end
+end
 usecustomfont = FastFlags:AddDropdown({
     Name = 'Custom Fonts',
-    Options = listfiles('Bloxstrap/Main/Fonts'),
+    Options = fontlists,
     Description = 'All fonts that are inside "Bloxstrap/Main/Fonts" folder.',
     Default = Bloxstrap.Config.CustomFont,
     Callback = function(val)
-      
+        local json = val:gsub('.ttf', '.json')
+        if val == 'none' then
+            --pcall(delfile, json)
+            currentcustomfont = nil
+            return Bloxstrap.UpdateConfig('CustomFont', '')
+        end
+        Bloxstrap.UpdateConfig('CustomFont', val)
+        --if not isfile(json) then
+            writefile(json, HttpService:JSONEncode({name = 'font', faces = {
+                {
+                    name = 'Regular',
+                    weight = 600,
+                    style = 'normal',
+                    assetId = getcustomasset(val)
+                }
+            }}))
+        --end
+          currentcustomfont = Font.new(getcustomasset(json), Enum.FontWeight.Regular)
+          if Bloxstrap.Config.customfonttoggle then
+            fontchanger:Toggle(false)
+            fontchanger:Toggle(true)
+          end
     end
 })
 
-
+fontchanger:Toggle(Bloxstrap.Config.customfonttoggle)
 
 local Presets: section = FastFlags:AddSection("Presets: Bannable")
 
@@ -414,7 +609,7 @@ local addcon = function()
         if humanoid.Health <= 0 then
             game:GetService("Players").LocalPlayer.PlayerScripts.RbxCharacterSounds.Enabled = false
             local sound = Instance.new("Sound", workspace)
-            sound.SoundId =  isfile('Bloxstrap/oofsound.mp3') and getcustomasset('Bloxstrap/oofsound.mp3')
+            sound.SoundId = isfile('Bloxstrap/deathsound.mp3') and getcustomasset('Bloxstrap/deathsound.mp3') or isfile('Bloxstrap/oofsound.mp3') and getcustomasset('Bloxstrap/oofsound.mp3')
             sound.PlayOnRemove = true 
             sound.Volume = 0.5
             sound:Destroy()
@@ -422,19 +617,19 @@ local addcon = function()
     end)
 end
 local olddeathsound: toggle = EngineSettings:AddToggle({
-Name = 'Use old death sound',
-Description = "Bring back the classic 'oof' death sound.",
-Default = Bloxstrap.Config.OofSound,
-Callback = function(call)
-Bloxstrap.UpdateConfig("OofSound", call)
-    if call then
-        addcon()
-        lplr.CharacterAdded:Connect(addcon)
-    else
-        deathsoundConnection:Disconnect()
-        deathsoundConnection = nil
+    Name = isfile('Bloxstrap/deathsound.mp3') and 'Use custom death sound' or 'Use old death sound',
+    Description = isfile('Bloxstrap/deathsound.mp3') and 'Gives you a custom death sound.' or "Bring back the classic 'oof' death sound.",
+    Default = Bloxstrap.Config.OofSound,
+    Callback = function(call)
+    Bloxstrap.UpdateConfig("OofSound", call)
+        if call then
+            addcon()
+            lplr.CharacterAdded:Connect(addcon)
+        else
+            deathsoundConnection:Disconnect()
+            deathsoundConnection = nil
+        end
     end
-end
 })
 
 lplr.CharacterAdded:Connect(function()
@@ -442,7 +637,7 @@ lplr.CharacterAdded:Connect(function()
         repeat task.wait() until lplr.Character
     end
     if not lplr.Character:FindFirstChild('Humanoid') then
-        repeat task.wait() until lplr.Character:FindFirstChild('Humanoid')
+        repeat task.wait() until isalive()
     end
     humanoid = lplr.Character:FindFirstChild('Humanoid')
     game:GetService("Players").LocalPlayer.PlayerScripts.RbxCharacterSounds.Enabled = true
@@ -494,7 +689,6 @@ local DisableTerrainTextures: toggle = EngineSettings:AddToggle({
     end
 })
 
-
 local origValue = Bloxstrap.GetFFlag("DFIntTaskSchedulerTargetFps")
 local FramerateLimit: textbox = EngineSettings:AddTextBox({
     Name = "Framerate limit",
@@ -504,7 +698,7 @@ local FramerateLimit: textbox = EngineSettings:AddTextBox({
         if fps == nil then return end;
         if type(fps) == "string" then fps = tonumber(fps) end;
         Bloxstrap.UpdateConfig("FPS", fps);
-        Bloxstrap.ToggleFFlag('FFlagDebugDisplayFPS', fps >= 70);
+        Bloxstrap.ToggleFFlag('FFlagTaskSchedulerLimitTargetFpsTo2402', fps and fps >= 70)
         if fps > 0 then
             setfpscap(fps);
             Bloxstrap.ToggleFFlag("DFIntTaskSchedulerTargetFps", fps);
@@ -514,6 +708,14 @@ local FramerateLimit: textbox = EngineSettings:AddTextBox({
         end;
     end;
 });
+EngineSettings:AddToggle({
+    Name = 'Display FPS',
+    Default = Bloxstrap.Config.DisplayFPS,
+    Callback = function(call)
+        Bloxstrap.UpdateConfig('DisplayFPS', call)
+        Bloxstrap.ToggleFFlag('FFlagDebugDisplayFPS', call);
+    end
+})
 
 --local usingVoxel = Bloxstrap.GetFFlag("DFFlagDebugRenderForceTechnologyVoxel")
 --local usingShadowMap = Bloxstrap.GetFFlag("DFFlagDebugRenderForceFutureIsBrightPhase2")
@@ -611,7 +813,7 @@ button.BackgroundTransparency = 0.07
 button.Text = ''
 button.BackgroundColor3 = Color3.new()
 button.Size = UDim2.new(0, 44, 0, 44)
-button.Position = UDim2.new(0, 110, 0, 0)
+button.Position = UDim2.new(0, 103, 0, 0)
 
 local imagelabel = Instance.new('ImageLabel', button)
 imagelabel.Size = UDim2.new(0, 22, 0, 22)
