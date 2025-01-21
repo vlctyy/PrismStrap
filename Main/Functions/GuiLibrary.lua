@@ -1195,7 +1195,7 @@ function redzlib:MakeWindow(Configs)
 				WaitClick, Default = true, Val
 				SetFlag(Flag, Default)
 				Funcs:FireCallback(Callback, Default)
-				print("fire")
+				--print("fire")
 				if tostring(Default) == "true" then
 					CreateTween({Toggle, "Position", UDim2.new(1, 0, 0.5), 0.25})
 					CreateTween({Toggle, "BackgroundTransparency", 0, 0.25})
@@ -1211,8 +1211,15 @@ function redzlib:MakeWindow(Configs)
 			Button.Activated:Connect(function()
 				SetToggle(not Default)
 			end)
+	
 			
 			local Toggle = {}
+			function Toggle:Retoggle()
+			    if Default then
+			        SetToggle(false)
+			        SetToggle(true)
+			    end
+			end
 			function Toggle:Toggle(bool: boolean) SetToggle(bool) end
 			function Toggle:Visible(...) Funcs:ToggleVisible(Button, ...) end
 			function Toggle:Destroy() Button:Destroy() end
@@ -1224,7 +1231,7 @@ function redzlib:MakeWindow(Configs)
 				elseif type(Val1) == "string" then
 					LabelFunc:SetTitle(Val1, false, true)
 				elseif type(Val1) == "boolean" then
-					print("yea")
+					--print("yea")
 					Toggle:Toggle(Val1)
 				elseif type(Val1) == "function" then
 					Callback = Val1
@@ -1744,6 +1751,7 @@ function redzlib:MakeWindow(Configs)
 				BackgroundTransparency = 1,
 				Font = Enum.Font.GothamBold,
 				TextScaled = true,
+				TextWrapped = true,
 				TextColor3 = Theme["Color Text"],
 				ClearTextOnFocus = TClearText,
 				PlaceholderText = TPlaceholderText,
