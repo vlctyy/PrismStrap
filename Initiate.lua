@@ -6,14 +6,14 @@ local getasync: () -> () = function(string: string): (string) -> (string)
     return game:HttpGet(string, true)
 end
 makefolder('Bloxstrap');
-
-local install: () -> () = function(config: {path: string, setup: boolean}): (table) -> ()
-    config = config or {}
-    makefolder('Bloxstrap/Main');
+makefolder('Bloxstrap/Main');
     makefolder('Bloxstrap/Main/Functions');
     makefolder('Bloxstrap/Main/Configs');
     makefolder('Bloxstrap/Main/Fonts')
     makefolder('Bloxstrap/Images')
+local install: () -> () = function(config: {path: string, setup: boolean}): (table) -> ()
+    config = config or {}
+    
     for i: number, v: table in httpservice:JSONDecode(getasync('https://api.github.com/repos/qwertyui-is-back/Bloxstrap/contents/')) do
         if v.name:find('.lua') then
             writefile(`Bloxstrap/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}', true))()`);
