@@ -295,7 +295,7 @@ Appearance:AddDropdown({
 Appearance:AddSection('Customizations')
 local gradients = {}
 local fakerobloxbutton
-local fakerobloxbutton = Instance.new('TextButton', game:GetService('CoreGui').TopBarApp.UnibarLeftFrame)
+pcall(function() fakerobloxbutton = Instance.new('TextButton', game:GetService('CoreGui').TopBarApp.UnibarLeftFrame)
 fakerobloxbutton.BorderSizePixel = 0
 fakerobloxbutton.BackgroundTransparency = 0.07
 fakerobloxbutton.Text = ''
@@ -316,7 +316,7 @@ imagelabel.BackgroundTransparency = 1
 imagelabel.Image = getcustomasset('Bloxstrap/icon.png')
 imagelabel.ImageColor3 = Color3.new(1, 1, 1)
 
-Instance.new('UICorner', fakerobloxbutton).CornerRadius = UDim.new(1, 0)
+Instance.new('UICorner', fakerobloxbutton).CornerRadius = UDim.new(1, 0) end)
 
 
 local customtopbar = Appearance:AddToggle({
@@ -807,6 +807,7 @@ local TextureQuality: dropdown = EngineSettings:AddDropdown({
 
 --> End
 Bloxstrap.canUpdate = true
+pcall(function()
 local button = Instance.new('TextButton', game:GetService('CoreGui').TopBarApp.UnibarLeftFrame)
 button.BorderSizePixel = 0
 button.BackgroundTransparency = 0.07
@@ -837,6 +838,6 @@ Bloxstrap.Visible = function(callback)
 end
 button.MouseButton1Click:Connect(function()
     Bloxstrap.Visible(not grad.Enabled)
-end)
+end) end)
 end
 return Bloxstrap
