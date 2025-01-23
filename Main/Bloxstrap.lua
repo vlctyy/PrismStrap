@@ -137,7 +137,7 @@ local derendering = Appearance:AddToggle({
         end
     end
 })
-
+pcall(function()
 local camerascript = require and require(lplr.PlayerScripts.PlayerModule.CameraModule.CameraInput) or {}
 local old = camerascript.getRotation
 local camsensitivity = Appearance:AddSlider({
@@ -153,7 +153,7 @@ local camsensitivity = Appearance:AddSlider({
         end
     end
 })  
-
+        end)
 local funnycon
 local guisets = {}
 local guiscale = Appearance:AddToggle({
