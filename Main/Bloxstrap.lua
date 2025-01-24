@@ -4,7 +4,7 @@ return loadstring(game:HttpGet("https://raw.githubusercontent.com/qwertyui-is-ba
 end
 local loadFunc = loadFunction
 local cloneref = cloneref or function(...) return ... end
-local players = cloneref(game.Players)
+local players = cloneref(game:GetService('Players'))
 local lplr = cloneref(game:GetService('Players')).LocalPlayer;
 local humanoid = lplr.Character:FindFirstChild('Humanoid');
 local HttpService = cloneref(game.GetService(game, "HttpService"))
