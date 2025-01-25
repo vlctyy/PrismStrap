@@ -18,11 +18,11 @@ local isfile: () -> () = isfile or function(file: string): (string) -> (boolean)
 return readfile(file) ~= nil and true or false;
 end;
 
-if hookfunction then
+--[[if hookfunction then
     hookfunction(lplr.Kick, function(...)
         return
     end)
-end
+end]]
 
 getgenv().Bloxstrap = {}
     Bloxstrap.TouchEnabled = UserInputService.TouchEnabled
