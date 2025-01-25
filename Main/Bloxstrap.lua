@@ -833,11 +833,11 @@ grad.Enabled = game:GetService('CoreGui')["redz Library V5"].Enabled
 
 Instance.new('UICorner', button).CornerRadius = UDim.new(1, 0)
 Bloxstrap.Visible = function(callback)
-    game:GetService('CoreGui')["redz Library V5"].Enabled = callback
-    grad.Enabled = callback
+    button.Visible = callback
 end
 button.MouseButton1Click:Connect(function()
-    Bloxstrap.Visible(not grad.Enabled)
+    game:GetService('CoreGui')["redz Library V5"].Enabled = not grad.Enabled
+    grad.Enabled = not grad.Enabled
 end) end)
 end
 return Bloxstrap
