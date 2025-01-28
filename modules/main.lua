@@ -459,9 +459,10 @@ return function(sets: table)
         behaviour:AddDropdown({
             Name = 'Load config',
             Options = configs,
-            Default = readfile('Bloxstrap/modules/configuration/config.txt') or 'default',
+            Default = isfile('Bloxstrap/modules/configuration/config.txt') and readfile('Bloxstrap/modules/configuration/config.txt') or 'default',
             Callback = function(val: string): ()
                 if val then
+                    writefile('Bloxstrap/modules/configuration/config.txt', val)
                     getgenv().presets.config = val
                 end
             end
