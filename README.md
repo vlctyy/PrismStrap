@@ -6,7 +6,7 @@ A script that attempts to recreate Bloxstrap, so you can use FFlags without inst
 getgenv().presets = {
     developer = false,
     visible = true, -- ur choice
-    config = 'init'
+    config = 'default'
 }
 loadstring(game.HttpGet(game, 'https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/main/init.lua', true))()
 ```
