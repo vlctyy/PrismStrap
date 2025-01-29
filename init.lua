@@ -1,7 +1,7 @@
 local cloneref = cloneref or function(instance) return instance end
 local settings = getgenv().presets or {
     visible = true,
-    developer = true,
+    developer = false,
     config = 'default'
 } :: {visible: boolean, developer: boolean, config: string}
 getgenv().presets = settings
