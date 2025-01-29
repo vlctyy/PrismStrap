@@ -38,14 +38,13 @@ return function(sets: table)
   
     coregui['redz Library V5'].Hub.Visible = sets.visible
   
-    local run = function(func)
-        func()
-    end
+    local run = pcall
   
     for i: number, v: string in {'Intergations', 'Mods', 'FastFlags', 'Appearance', 'Behaviour'} do
         getfenv()[v:lower():gsub(' ', '')] = main:MakeTab({
-            v,
-            ''
+             v,
+            '',
+            true
         })
     end
     
@@ -171,7 +170,7 @@ return function(sets: table)
         local connections = {}
         mods:AddToggle({
             Name = 'Better Resolution',
-            Tooltip = 'Changes your screen resolution (doesnt work rn)',
+            Tooltip = 'Changes your screen resolution.',
             Callback = function(call: boolean): ()
               
             end
@@ -296,6 +295,7 @@ return function(sets: table)
             Callback = function(val: string): ()
                 if not val or not userinputservice.TouchEnabled then return end
                 local newval = val:find('x') and val:gsub('x', '') or 0
+                print(newval)
                 setfflag('FIntDebugForceMSAASamples', newval)
             end
         })
@@ -305,12 +305,14 @@ return function(sets: table)
         fastflags:AddToggle({
             Name = 'Disable player shadows',
             Callback = function(call: boolean): ()
+                
                 setfflag('FIntRenderShadowIntensity', call and 0 or 1)
             end
         })
         fastflags:AddToggle({
             Name = 'Disable post-processing effects',
             Callback = function(call: boolean): ()
+            
                 setfflag('FFlagDisablePostFx', call and true or false)
             end
         })
@@ -438,13 +440,40 @@ return function(sets: table)
       })
     end)
     
+    fastflags:AddSection('Fast Flag Editor')
+    
     run(function()
-        local fastflags = isfile('Bloxstrap/modules/configuration/fastflags.json') and httpservice:JSONDecode(readfile('Bloxstrap/modules/configuration/fastflags.json')) or {} :: table
-        for i: string, v: string? in fastflags do
-            local value = v == 'True' and true or v == 'False' and false or v :: string?
-            setfflag(i, value)
-        end
-        print('entered fflags')
+        spawn(function()
+            task.wait(0.05)
+            fastflags:AddTextBox({
+                Name = 'Add New',
+                Loadable = false,
+                Default = isfile('Bloxstrap/cache/enteredflags.json') and readfile('Bloxstrap/cache/enteredflags.json') or nil,
+                Callback = function(val)
+                    if not val or val == '' then return end
+                    writefile('Bloxstrap/cache/enteredflags.json', val)
+                    local suc, res = pcall(function()
+                        return httpservice:JSONDecode(readfile('Bloxstrap/cache/enteredflags.json'))
+                    end)
+                    if not suc then
+                        writefile('Bloxstrap/cache/enteredflags.json', '{}')
+                        error('Invalid json format')
+                    end
+                    for i: string, v: any in res do
+                        fastflags:AddTextBox({
+                            Name = i,
+                            Default = v,
+                            Callback = function(val)
+                                if val == nil then return end
+                                setfflag(i, val)
+                            end
+                        })
+                    end
+                end
+            })
+        end)
+        fastflags:AddSection('Added FastFlags')
+        
     end)
   
     run(function()
@@ -457,72 +486,4 @@ return function(sets: table)
         end
         
         behaviour:AddDropdown({
-            Name = 'Load config',
-            Options = configs,
-            Default = isfile('Bloxstrap/modules/configuration/config.txt') and readfile('Bloxstrap/modules/configuration/config.txt') or 'default',
-            Callback = function(val: string): ()
-                if val then
-                    writefile('Bloxstrap/modules/configuration/config.txt', val)
-                    getgenv().presets.config = val
-                end
-            end
-        })
-      
-        behaviour:AddTextBox({
-            Name = 'Add New Config',
-            Callback = function(val: string): ()
-                if val and val ~= '' then
-                    writefile(`Bloxstrap/modules/configuration/{configvalue}.json`, '{}')
-                    --return loadfile('Bloxstrap/init.lua')()
-                end
-            end
-        })
-    end)
-    
-    run(function()
-        local button = nil
-        appearance:AddToggle({
-            Name = 'Toggle Button',
-            Default = sets.visible,
-            savable = false,
-            Callback = function(call: boolean): ()
-                if call then
-                    button = Instance.new('TextButton', coregui['redz Library V5'])
-                    button.BorderSizePixel = 0
-                    button.BackgroundTransparency = 0.2
-                    button.Text = ''
-                    button.AnchorPoint = Vector2.new(1, 0.5)
-                    button.BackgroundColor3 = Color3.new()
-                    button.Size = UDim2.new(0, 44, 0, 44)
-                    button.Position = UDim2.fromScale(1, 0.5)
-                    
-                    local imagelabel = Instance.new('ImageLabel', button) :: ImageLabel
-                    imagelabel.Size = UDim2.new(0, 22, 0, 22)
-                    imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
-                    imagelabel.BackgroundTransparency = 1
-                    imagelabel.Image = getcustomasset('Bloxstrap/images/bloxstrap.png')
-                    imagelabel.ImageColor3 = Color3.new(1, 1, 1)
-                    
-                    local grad = Instance.new('UIGradient', imagelabel) :: UIGradient
-                    grad.Rotation = 60
-                    grad.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(219, 89, 171)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(61, 56, 192))
-                    })
-                    button.MouseButton1Click:Connect(function()
-                        coregui['redz Library V5'].Hub.Visible = not grad.Enabled
-                        grad.Enabled = not grad.Enabled
-                    end)
-                    
-                    Instance.new('UICorner', button).CornerRadius = UDim.new(1, 0)
-                else
-                    if button then
-                        button:Destroy()
-                    end
-                end
-            end
-        })
-    end)
-    
-    print('loaded')
-end
+        
