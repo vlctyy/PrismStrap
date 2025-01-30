@@ -1,5 +1,5 @@
 return function(sets: table)
-    for i: number, v: string in {'Players', 'ReplicatedStorage', 'HttpService', 'UserInputService', 'CoreGui', 'Lighting'} do
+    for i: number, v: string in {'Players', 'ReplicatedStorage', 'HttpService', 'UserInputService', 'CoreGui', 'Lighting', 'TextChatService', 'StarterGui'} do
         getfenv()[v:lower()] = cloneref(game:GetService(v))
     end
     local lplr = players.LocalPlayer :: Player
@@ -36,17 +36,71 @@ return function(sets: table)
         SaveName = sets.config
     })
   
-    coregui['redz Library V5'].Hub.Visible = sets.visible
+    coregui['redz Library V5'].Enabled = sets.visible
   
-    local run = pcall
+    local run = sets.developer and function(func)
+        func()
+    end or pcall
+    
+    local tabdescs = {
+        Intergations = 'Configure additional functionality to go alongside roblox.',
+        Mods = 'Applies modifications to your client.',
+        FastFlags = 'Control how specfic Roblox engine parameters and features are configured.',
+        Appearance = '',
+        Behaviour = ''
+    }
   
     for i: number, v: string in {'Intergations', 'Mods', 'FastFlags', 'Appearance', 'Behaviour'} do
         getfenv()[v:lower():gsub(' ', '')] = main:MakeTab({
              v,
             '',
-            true
+            tabdescs[v]
         })
     end
+    
+    intergations:AddSection('Activity tracking')
+    
+    run(function()
+        local connections
+        local con2
+        intergations:AddToggle({
+            Name = 'Player logs',
+            Tooltip = 'Shows you players joining/leaving your current server.',
+            Callback = function(call)
+                if call then
+                    connections = players.PlayerAdded:Connect(function(v)
+                        local user = v.DisplayName == v.Name and `@{v.Name}` or `{v.DisplayName} (@{v.Name})` :: string
+                        if textchatservice.ChatVersion == Enum.ChatVersion.TextChatService then
+                            textchatservice.TextChannels.RBXGeneral:DisplaySystemMessage(`<font color='rgb(255, 255, 0)'>{user} has joined the experience.</font>`)
+                        else
+                            startergui:SetCore('ChatMakeSystemMessage', {
+                                Text = `{user} has joined the experience.`,
+                                Color = Color3.fromRGB(255, 255, 0),
+                                Font = Enum.Font.BuilderSansMedium
+                            })
+                        end
+                    end)
+                    connections = players.PlayerRemoving:Connect(function(v)
+                        local user = v.DisplayName == v.Name and `@{v.Name}` or `{v.DisplayName} (@{v.Name})` :: string
+                        if textchatservice.ChatVersion == Enum.ChatVersion.TextChatService then
+                            textchatservice.TextChannels.RBXGeneral:DisplaySystemMessage(`<font color='rgb(255, 255, 0)'>{user} has left the experience.</font>`)
+                        else
+                            startergui:SetCore('ChatMakeSystemMessage', {
+                                Text = `{user} has left the experience.`,
+                                Color = Color3.fromRGB(255, 255, 0),
+                                Font = Enum.Font.BuilderSansMedium
+                            })
+                        end
+                    end)
+                else
+                    if connection then
+                        con2:Disconnect()
+                        connection:Disconnect()
+                    end
+                end
+            end
+        })
+    end)
     
     mods:AddSection('Presets')
     
@@ -246,7 +300,7 @@ return function(sets: table)
                         faces = {
                             {
                                 name = 'Regular',
-                                weight = 100,
+                                weight = 50,
                                 style = 'normal',
                                 assetId = getcustomasset(val)
                             }
@@ -285,21 +339,7 @@ return function(sets: table)
         })
     end)
     
-    fastflags:AddSection('Presets')
-    fastflags:AddSection({Name = 'Rendering and graphics', lower = true})
-    
-    run(function()
-        fastflags:AddDropdown({  
-            Name = 'Anti-aliasing quality (MSAA)',
-            Options = {'Automatic', '1x', '2x', '4x'},
-            Callback = function(val: string): ()
-                if not val or not userinputservice.TouchEnabled then return end
-                local newval = val:find('x') and val:gsub('x', '') or 0
-                print(newval)
-                setfflag('FIntDebugForceMSAASamples', newval)
-            end
-        })
-    end)
+    fastflags:AddSection({Name = 'Presets', tooltip = 'Renderer'})
     
     run(function()
         fastflags:AddToggle({
@@ -340,6 +380,61 @@ return function(sets: table)
                 setfflag('FIntTerrainArraySliceSize', call and 0 or oldterrain)
             end
         })
+      
+        fastflags:AddToggle({
+            Name = 'Disable In-game advertisements',
+            Callback = function(call: boolean): ()
+                setfflag('FFlagAdServiceEnabled', not call)
+            end
+        })
+      
+        fastflags:AddToggle({
+            Name = 'Disable Winds',
+            Callback = function(call)
+                setfflag('FFlagGlobalWindRendering', not call)
+                setfflag('FFlagGlobalWindActivated', not call)
+            end
+        })
+    
+        fastflags:AddToggle({
+            Name = 'Disable In-game audios',
+            Callback = function(call)
+                setfflag('FFlagDebugRomarkMockingAudioDevices', call)
+            end
+        })
+      
+        fastflags:AddToggle({
+            Name = 'Use Gray sky',
+            Callback = function(call)
+                setfflag('FFlagDebugSkyGray', call)
+            end
+        })
+    end)
+    
+    fastflags:AddSection({Name = 'Presets', tooltip = 'Game graphics'})
+    
+    run(function()
+        fastflags:AddDropdown({  
+            Name = 'Anti-aliasing quality (MSAA)',
+            Options = {'Automatic', '1x', '2x', '4x'},
+            Callback = function(val: string): ()
+                if not val or not userinputservice.TouchEnabled then return end
+                local newval = val:find('x') and val:gsub('x', '') or 0
+                print(newval)
+                setfflag('FIntDebugForceMSAASamples', newval)
+            end
+        })
+    end)
+    
+    run(function()
+        fastflags:AddDropdown({  
+            Name = 'Frame Buffer',
+            Options = {'1x', '2x', '3x', '4x', '10x'},
+            Callback = function(val: string): ()
+                local newval = val:find('x') and val:gsub('x', '') or 0
+                setfflag('DFIntMaxFrameBufferSize', newval)
+            end
+        })
     end)
   
     run(function()
@@ -349,16 +444,32 @@ return function(sets: table)
             Callback = function(val: string): ()
                 val = tonumber(val)
                 if val == nil then return end
-                setfflag('FFlagTaskSchedulerLimitTargetFpsTo2402', val and val > 60 and true or false)
-                setfflag('FFlagDebugDisplayFPS', val > 90)
                 if val and val == 0 then
                     setfpscap(240)
                     setfflag('DFIntTaskSchedulerTargetFps', 240)
-                    return
                 end
                 if val then
                     setfpscap(val)
                     setfflag('DFIntTaskSchedulerTargetFps', val)
+                end
+                setfflag('FFlagTaskSchedulerLimitTargetFpsTo2402', val and val > 60 and false or true)
+                setfflag('FFlagGameBasicSettingsFramerateCap5', val < 60)
+                setfflag('FFlagDebugDisplayFPS', val > 90)
+            end
+        })
+    end)
+    
+    run(function()
+        fastflags:AddTextBox({
+            Name = 'Debug Graphic Quality',
+            Tooltip = 'Forces ur game graphic quality to be what you choose (1 - 21).',
+            Default = 1,
+            Callback = function(val)
+                if val and tonumber(val) then
+                    setfflag('FFlagCommitToGraphicsQualityFix', true)
+                    setfflag('FFlagFixGraphicsQuality', true)
+                    setfflag('DFIntDebugRestrictGCDistance', val)
+                    setfflag('DFIntDebugFRMQualityLevelOverride', val)
                 end
             end
         })
@@ -412,7 +523,7 @@ return function(sets: table)
                   setfflag('DFIntTextureQualityOverride', 0)
                   setfflag('FIntDebugTextureManagerSkipMips', 2)
                   return
-              elseif str:find('low') then
+              elseif str == 'low' then
                   setfflag('DFFlagTextureQualityOverrideEnabled', true)
                   setfflag('DFIntTextureQualityOverride', 0)
                   setfflag('FIntDebugTextureManagerSkipMips', 0)
@@ -422,7 +533,7 @@ return function(sets: table)
                   setfflag('DFIntTextureQualityOverride', 1)
                   setfflag('FIntDebugTextureManagerSkipMips', 0)
                   return
-              elseif str:find('high') then
+              elseif str == 'high' then
                   setfflag('DFFlagTextureQualityOverrideEnabled', true)
                   setfflag('DFIntTextureQualityOverride', 2)
                   setfflag('FIntDebugTextureManagerSkipMips', 0)
@@ -433,6 +544,7 @@ return function(sets: table)
                   setfflag('FIntDebugTextureManagerSkipMips', 0)
                   return
               end
+              print('omao')
               setfflag('DFFlagTextureQualityOverrideEnabled', false)
               setfflag('DFIntTextureQualityOverride', 3)
               setfflag('FIntDebugTextureManagerSkipMips', 0)
@@ -440,40 +552,190 @@ return function(sets: table)
       })
     end)
     
+    fastflags:AddSection({
+        Name = 'Improvement presets',
+        tooltip = 'Not bannable fflags.'
+    })
+  
+    run(function()
+        fastflags:AddToggle({
+            Name = 'Lower ping',
+            Tooltip = 'Lowers ur game ping (disable the feature and restart roblox to fully disable this).',
+            Callback = function(call)
+                if call then
+                    local json = [[
+                        {
+                        "DFIntConnectionMTUSize": 900,
+                        "FIntRakNetResendBufferArrayLength": "128",
+                        "FFlagOptimizeNetwork": "True",
+                        "FFlagOptimizeNetworkRouting": "True",
+                        "FFlagOptimizeNetworkTransport": "True",
+                        "FFlagOptimizeServerTickRate": "True",
+                        "DFIntServerPhysicsUpdateRate": "60",
+                        "DFIntServerTickRate": "60",
+                        "DFIntRakNetResendRttMultiple": "1",
+                        "DFIntRaknetBandwidthPingSendEveryXSeconds": "1",
+                        "DFIntOptimizePingThreshold": "50",
+                        "DFIntPlayerNetworkUpdateQueueSize": "20",
+                        "DFIntPlayerNetworkUpdateRate": "60",
+                        "DFIntNetworkPrediction": "120",
+                        "DFIntNetworkLatencyTolerance": "1",
+                        "DFIntMinimalNetworkPrediction": "0.1"
+                        }
+                    ]]
+                    for i,v in httpservice:JSONDecode(json) do
+                        
+                        setfflag(i, v:gsub('"True"', 'true'):gsub('"False"', 'false'))
+                    end
+                end
+            end
+        })
+    end)
+    
+    run(function()
+        fastflags:AddToggle({
+            Name = 'Verified badge',
+            Tooltip = 'Gives your self a verify badge (clientside).',
+            Callback = function(call)
+                setfflag('FStringWhitelistVerifiedUserId', call and lplr.UserId or '')
+            end
+        })
+    end)
+  
+    run(function()
+        fastflags:AddToggle({
+            Name = 'FPS FastFlags',
+            Tooltip = 'Boosts your game framerate (disable the feature and restart roblox to fully disable this).',
+            Callback = function(call)
+                if call then
+                    local json = [[
+                        {
+                        "FFlagDebugDisableTelemetryEphemeralCounter": true,
+                        "FFlagDebugDisableTelemetryEphemeralStat": true,
+                        "FFlagDebugDisableTelemetryEventIngest": true,
+                        "FFlagDebugDisableTelemetryPoint": true,
+                        "FFlagDebugDisableTelemetryV2Counter": true,
+                        "FFlagDebugDisableTelemetryV2Event": true,
+                        "FFlagDebugDisableTelemetryV2Stat": true
+                        }
+                    ]]
+                    for i,v in httpservice:JSONDecode(json) do
+                        setfflag(i, v)
+                    end
+                end
+            end
+        })
+    end)
+    
+    fastflags:AddSection({
+        Name = 'OP Presets',
+        tooltip = 'These fastflags arent recommended because its **bannable**'
+    })
+  
+    run(function()
+        local oldnoclip = getfflag('DFFlagAssemblyExtentsExpansionStudHundredth')
+        fastflags:AddToggle({
+            Name = 'Noclip',
+            Callback = function(call)
+                setfflag('DFFlagAssemblyExtentsExpansionStudHundredth', call and -50 or oldnoclip)
+            end
+        })
+        fastflags:AddToggle({
+            Name = 'Desync',
+            Callback = function(call)
+                if call then
+                    local json = [[
+                        {
+                            "DFFlagPhysicsSkipNonRealTimeHumanoidForceCalc2": false,
+                            "DFIntS2PhysicsSenderRate": "3",
+                            "DFIntTaskSchedulerTargetFps": 5588562
+                        }
+                    ]]
+                    for i,v in httpservice:JSONDecode(json) do
+                        setfflag(i,v)
+                    end
+                end
+            end
+        })
+        fastflags:AddToggle({
+            Name = 'Hitreg Fix',
+            Callback = function(call)
+                if call then
+                    local json = [[
+                        { 
+                      "DFIntCodecMaxIncomingPackets": "100",
+                      "DFIntCodecMaxOutgoingFrames": "10000",
+                      "DFIntLargePacketQueueSizeCutoffMB": "1000",
+                      "DFIntMaxProcessPacketsJobScaling": "10000",
+                      "DFIntMaxProcessPacketsStepsAccumulated": "0",
+                      "DFIntMaxProcessPacketsStepsPerCyclic": "5000",
+                      "DFIntMegaReplicatorNetworkQualityProcessorUnit": "10",
+                      "DFIntNetworkLatencyTolerance": "1",
+                      "DFIntNetworkPrediction": "120",
+                      "DFIntOptimizePingThreshold": "50",
+                      "DFIntPlayerNetworkUpdateQueueSize": "20",
+                      "DFIntPlayerNetworkUpdateRate": "60",
+                      "DFIntRaknetBandwidthInfluxHundredthsPercentageV2": "10000",
+                      "DFIntRaknetBandwidthPingSendEveryXSeconds": "1",
+                      "DFIntRakNetLoopMs": "1",
+                      "DFIntRakNetResendRttMultiple": "1",
+                      "DFIntServerPhysicsUpdateRate": "60",
+                      "DFIntServerTickRate": "60",
+                      "DFIntWaitOnRecvFromLoopEndedMS": "100",
+                      "DFIntWaitOnUpdateNetworkLoopEndedMS": "100",
+                      "FFlagOptimizeNetwork": "true",
+                      "FFlagOptimizeNetworkRouting": "true",
+                      "FFlagOptimizeNetworkTransport": "true",
+                      "FFlagOptimizeServerTickRate": "true",
+                      "FIntRakNetResendBufferArrayLength": "128"
+                    }]]
+                    for i,v in httpservice:JSONDecode(json) do
+                        setfflag(i,v)
+                    end
+                end
+            end
+        })
+    end)
+    
     fastflags:AddSection('Fast Flag Editor')
     
     run(function()
-        spawn(function()
-            task.wait(0.05)
-            fastflags:AddTextBox({
-                Name = 'Add New',
-                Loadable = false,
-                Default = isfile('Bloxstrap/cache/enteredflags.json') and readfile('Bloxstrap/cache/enteredflags.json') or nil,
-                Callback = function(val)
-                    if not val or val == '' then return end
-                    writefile('Bloxstrap/cache/enteredflags.json', val)
-                    local suc, res = pcall(function()
-                        return httpservice:JSONDecode(readfile('Bloxstrap/cache/enteredflags.json'))
-                    end)
-                    if not suc then
-                        writefile('Bloxstrap/cache/enteredflags.json', '{}')
-                        error('Invalid json format')
-                    end
-                    for i: string, v: any in res do
-                        fastflags:AddTextBox({
-                            Name = i,
-                            Default = v,
-                            Callback = function(val)
-                                if val == nil then return end
-                                setfflag(i, val)
-                            end
-                        })
-                    end
+        local textbox = fastflags:AddTextBox({
+            Name = 'Add New',
+            Loadable = false,
+            Default = '',
+            Callback = function(val)
+                if not val or val == '' then return end
+                local oldresult = ({pcall(function() return httpservice:JSONDecode(readfile('Bloxstrap/cache/enteredflags.json')) end)})
+                local old = oldresult[1] and oldresult[2] or {}
+                val = val:gsub('"True"', 'true'):gsub('"False"', 'false')
+                writefile('Bloxstrap/cache/enteredflags.json', val)
+                local suc, res = pcall(function()
+                    return httpservice:JSONDecode(readfile('Bloxstrap/cache/enteredflags.json'))
+                end)
+                if not suc then
+                    writefile('Bloxstrap/cache/enteredflags.json', '{}')
+                    error('Invalid json format')
                 end
-            })
-        end)
+                for i: string, v: any in res do
+                    old[i] = v
+                    fastflags:AddTextBox({
+                        Name = i,
+                        Loadable = true,
+                        Default = v,
+                        Callback = function(val)
+                            if val == nil then return end
+                            old[i] = val
+                            writefile('Bloxstrap/cache/enteredflags.json', httpservice:JSONEncode(old))
+                            setfflag(i, val)
+                        end
+                    })
+                end
+                writefile('Bloxstrap/cache/enteredflags.json', httpservice:JSONEncode(old))
+            end
+        })
         fastflags:AddSection('Added FastFlags')
-        
+        textbox:Set(isfile('Bloxstrap/cache/enteredflags.json') and readfile('Bloxstrap/cache/enteredflags.json') or '{}')
     end)
   
     run(function()
@@ -555,3 +817,4 @@ return function(sets: table)
     
     print('loaded')
 end
+
