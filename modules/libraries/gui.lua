@@ -147,7 +147,8 @@ local SetProps, SetChildren, InsertTheme, Create do
 	pcall(Save, "redz library V5.json")
 end
 
-local configsettings = isfile('Bloxstrap/modules/configuration/'.. presets.config.. '.json') and cloneref(game:GetService('HttpService')):JSONDecode(readfile('Bloxstrap/modules/configuration/'.. presets.config.. '.json'))
+local configsettings = isfile('Bloxstrap/modules/configuration/'.. presets.config.. '.json') and cloneref(game:GetService('HttpService')):JSONDecode(readfile('Bloxstrap/modules/configuration/'.. presets.config.. '.json')) or {}
+
 local function saveconfigjson(api)
     configsettings[api.Name] = api.Default
     writefile('Bloxstrap/modules/configuration/'.. presets.config.. '.json', cloneref(game:GetService('HttpService')):JSONEncode(configsettings))
@@ -165,9 +166,7 @@ local Funcs = {} do
 		for _,v in ipairs(tab) do
 			if type(v) == "function" then
 				task.spawn(v, ...)
-				if api then
-					saveconfigjson(api)
-				end
+				saveconfigjson(api)
 			end
 		end
 	end
@@ -960,6 +959,7 @@ function redzlib:MakeWindow(Configs)
 		if type(paste) == "table" then Configs = paste end
 		local TName = Configs[1] or Configs.Title or "Tab!"
 		local TIcon = Configs[2] or Configs.Icon or ""
+		local Ttooltip = Configs[3] or Configs.Tooltip or nil
 		
 		TIcon = redzlib:GetIcon(TIcon)
 		if not TIcon:find("rbxassetid://") or TIcon:gsub("rbxassetid://", ""):len() < 6 then
@@ -1079,25 +1079,40 @@ function redzlib:MakeWindow(Configs)
 		end
 		function Tab:AddSection(Configs)
 			local SectionName = type(Configs) == "string" and Configs or Configs[1] or Configs.Name or Configs.Title or Configs.Section
-			local Islower = type(Configs) == 'table' and Configs.lower or false
+			local ToolTip = type(Configs) == 'table' and Configs.tooltip or nil
+			local isbigger = type(Configs) == 'table' and Configs.bigger or false
 			
 			local SectionFrame = Create("Frame", Container, {
-				Size = UDim2.new(1, 0, 0, 20),
+				Size = UDim2.new(1, 0, 0, ToolTip and 25 + (isbigger and 0 or 5) or 20),
 				BackgroundTransparency = 1,
 				Name = "Option"
 			})
 			
 			local SectionLabel = InsertTheme(Create("TextLabel", SectionFrame, {
-				Font = Islower and Enum.Font.Gotham or Enum.Font.GothamBold,
+				Font = Enum.Font.GothamBold,
 				Text = SectionName,
 				TextColor3 = Theme["Color Text"],
 				Size = UDim2.new(1, -25, 1, 0),
-				Position = UDim2.new(0, Islower and 5.5 or 5, Islower and 0.4 or 0, 0),
+				Position = UDim2.new(0, 2, 0, 0),
 				BackgroundTransparency = 1,
 				TextTruncate = "AtEnd",
-				TextSize = Islower and 9 or 14,
+				TextSize = isbigger and 18 or 12,
 				TextXAlignment = "Left"
 			}), "Text")
+			
+			if ToolTip then
+			    local SectionLabel = InsertTheme(Create("TextLabel", SectionFrame, {
+    				Font = Enum.Font.Gotham,
+    				Text = ToolTip,
+    				TextColor3 = Theme["Color Text"],
+    				Size = UDim2.new(1, -25, 1, 0),
+    				Position = UDim2.new(0, 2, (isbigger and 0.5 or 0.35), 0),
+    				BackgroundTransparency = 1,
+    				TextTruncate = "AtEnd",
+    				TextSize = 9,
+    				TextXAlignment = "Left"
+    			}), "Text")
+			end
 			
 			local Section = {}
 			table.insert(redzlib.Options, {type = "Section", Name = SectionName, func = Section})
@@ -1115,6 +1130,11 @@ function redzlib:MakeWindow(Configs)
 			end
 			return Section
 		end
+		Tab:AddSection({  
+		    Name = TName,
+		    bigger = true,
+		    tooltip = Ttooltip
+		})
 		function Tab:AddParagraph(Configs)
 			local PName = Configs[1] or Configs.Title or "Paragraph"
 			local PDesc = Configs[2] or Configs.Text or ""
@@ -1786,7 +1806,7 @@ function redzlib:MakeWindow(Configs)
 			
 			local api = {
 			    Name = TName,
-			    Default = Configs.Loadable == false and TDefault or nil or configsettings[TName]
+			    Default = Configs.Loadable == false and TDefault or configsettings[TName]
 			}
 			
 			if api.Default == nil then
@@ -1835,7 +1855,8 @@ function redzlib:MakeWindow(Configs)
 				local Text = TextBoxInput.Text
 				if Text:gsub(" ", ""):len() > 0 then
 					if TextBox.OnChanging then Text = TextBox.OnChanging(Text) or Text end
-					Funcs:FireCallback(Callback, nil, Text)
+					api.Default = Text
+					Funcs:FireCallback(Callback, api, Text)
 					TextBoxInput.Text = Text
 				end
 			end
