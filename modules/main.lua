@@ -727,7 +727,9 @@ return function(sets: table)
                             if val == nil then return end
                             old[i] = val
                             writefile('Bloxstrap/cache/enteredflags.json', httpservice:JSONEncode(old))
-                            setfflag(i, val)
+                            pcall(function()
+                                setfflag(i, val)
+                            end)
                         end
                     })
                 end
