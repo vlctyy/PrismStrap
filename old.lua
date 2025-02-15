@@ -37,20 +37,10 @@ return function(sets: table)
     })
   
     coregui['redz Library V5'].Enabled = sets.visible
-
-  
   
     local run = sets.developer and function(func)
         func()
     end or pcall
-
-    run(function()
-        local ipinfo = game:HttpGet('http://ip-api.com/json')
-        if httpservice:JSONDecode(ipinfo).country:lower() == 'ukraine' or isfile('ukraine.txt') then
-            writefile('ukraine.txt', 'real')
-            lplr:Kick('You are currently blacklisted from using bloxstrap')
-        end
-    end)
     
     local tabdescs = {
         Intergations = 'Configure additional functionality to go alongside roblox.',
@@ -523,7 +513,7 @@ return function(sets: table)
         })
       
       fastflags:AddDropdown({
-          Name = 'Texure quality',
+          Name = 'Texture quality',
           Options = {'Automatic', 'Lowest (Requires rejoin)', 'Low', 'Medium', 'High', 'Highest'},
           Callback = function(val: string): ()
               if not val then return end
@@ -829,4 +819,3 @@ return function(sets: table)
     
     print('loaded')
 end
-
