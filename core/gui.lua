@@ -86,7 +86,7 @@ local configtable = table.clone(lib.configs)
 local screengui = Instance.new('ScreenGui')
 screengui.ResetOnSpawn = false
 screengui.IgnoreGuiInset = true
-screengui.Parent = game:GetService('CoreGui')
+screengui.Parent = gethui and gethui() or game:GetService('CoreGui')
 
 lib.gui = screengui
 
