@@ -13,6 +13,8 @@ local inputservice = cloneref(game:FindService('UserInputService')) :: UserInput
 local lplr = players.LocalPlayer :: Player
 local request = fluxus and fluxus.request or identifyexecutor() == 'Delta' and http.request or syn and syn.request or request
 
+--getgenv().developer = true
+
 local loadfile = function(file, errpath)
     if getgenv().developer then
         errpath = errpath or file:gsub('bloxstrap/', '')
@@ -23,12 +25,21 @@ local loadfile = function(file, errpath)
             Method = 'GET'
         })
         if result.StatusCode ~= 404 then
-            loadstring(result.Body)
+            return loadstring(result.Body)
         else
             error('Invalid file')
         end
     end
 end
+
+local getcustomasset = function(path: string)
+    if not isfile(path) then
+        writefile(path, game:HttpGet(`https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/main/{path:gsub('bloxstrap/', '')}`))
+    end
+    return getgenv().getcustomasset(path)
+end
+
+print(getcustomasset('bloxstrap/images/bloxstrap.png'))
 
 local getfflag = loadfile('bloxstrap/core/getfflag.lua')()
 local setfflag = loadfile('bloxstrap/core/setfflag.lua')()
@@ -47,13 +58,6 @@ run(function()
         lplr:Kick('You are currently blacklisted from using bloxstrap')
     end
 end)
-
-local getcustomasset = function(path: string)
-    if not isfile(path) then
-        writefile(path, game:HttpGet(`https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/main/{path:gsub('bloxstrap/', '')}`))
-    end
-    return getgenv().getcustomasset(path)
-end
 
 local displaymessage = function(msg, color, font)
     if textchat.ChatVersion == Enum.ChatVersion.TextChatService then
@@ -148,7 +152,7 @@ run(function()
         callback = function(call)
             if call then
                 local imagelabel = Instance.new('ImageLabel', gui.gui)
-                imagelabel.Size = UDim2.new(0, 22, 0, 22)
+                imagelabel.Size = UDim2.new(0, 25, 0, 25)
                 imagelabel.AnchorPoint = Vector2.new(0.5, 0.5)
                 imagelabel.Position = UDim2.new(0.5, 0, 0.5, 0)
                 imagelabel.BackgroundTransparency = 1
@@ -160,12 +164,17 @@ run(function()
     })
     local list = {}
     for i,v in listfiles('bloxstrap/images') do
-        local new = v:gsub('bloxstrap/images/', ''):gsub('./', '')
-        table.insert(list, new)
+        local new = v:split('/')
+        local real = new[#new]:gsub('images\\', '')
+        print(real)
+        table.insert(list, real)
     end
     crosshairimage = crosshair:adddropdown({
         name = 'Image',
-        list = list
+        list = list,
+        callback = function()
+            crosshair:retoggle()
+        end
     })
 end)
 
@@ -733,5 +742,11 @@ if not getgenv().noshow then
         Duration = 10
     })
 end
+
+run(function()
+    for i,v in httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json')) do
+        setfflag(i, v)
+    end
+end)
 
 gui:loadconfig()
