@@ -13,8 +13,6 @@ local inputservice = cloneref(game:FindService('UserInputService')) :: UserInput
 local lplr = players.LocalPlayer :: Player
 local request = fluxus and fluxus.request or identifyexecutor() == 'Delta' and http.request or syn and syn.request or request
 
-getgenv().developer = true
-
 local loadfile = function(file, errpath)
     if getgenv().developer then
         errpath = errpath or file:gsub('bloxstrap/', '')
