@@ -31,6 +31,22 @@ if readfile('bloxstrap/selected.txt') == 'new' then
 end
 local httpservice = cloneref(game:GetService('HttpService')) :: HttpService
 local inputservice = cloneref(game:GetService('UserInputService')) :: UserInputService
+local loadfile = function(file, errpath)
+    if getgenv().developer then
+        errpath = errpath or file:gsub('bloxstrap/', '')
+        return getgenv().loadfile(file, errpath)
+    else
+        local result = request({
+            Url = `https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/main/{file:gsub('bloxstrap/', '')}`,
+            Method = 'GET'
+        })
+        if result.StatusCode ~= 404 then
+            return loadstring(result.Body)
+        else
+            error('Invalid file')
+        end
+    end
+end
 local elements = {
     windows = {},
     assets = {
