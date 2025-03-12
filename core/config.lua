@@ -17,6 +17,7 @@ function configapi:getdata(args, json)
 end
 function configapi:loadconfig(lib)
     local decoded = httpservice:JSONDecode(readfile('bloxstrap/logs/profile.json')) :: table
+    warn(lib.modules)
     table.foreach(lib.modules, warn)
     for i: string, v: table in lib.modules do
         local module = decoded[i]
