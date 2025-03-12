@@ -91,7 +91,7 @@ else
         Title = 'Bloxstrap',
         SubTitle = '',
         TabWidth = 160,
-        Size = UDim2.fromOffset(720, 460),
+        Size = UDim2.fromOffset(640, 260),
         Acrylic = false,
         Theme = 'Darker',
         MinimizeKey = Enum.KeyCode.RightShift
