@@ -1,3 +1,4 @@
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local UserInputService = game:GetService("UserInputService")
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
@@ -13,7 +14,7 @@ local inputservice = cloneref(game:FindService('UserInputService')) :: UserInput
 local lplr = players.LocalPlayer :: Player
 local request = fluxus and fluxus.request or identifyexecutor() == 'Delta' and http.request or syn and syn.request or request
 
---getgenv().developer = true
+getgenv().developer = true
 
 local loadfile = function(file, errpath)
     if getgenv().developer then
@@ -39,25 +40,14 @@ local getcustomasset = function(path: string)
     return getgenv().getcustomasset(path)
 end
 
-print(getcustomasset('bloxstrap/images/bloxstrap.png'))
+print(getcustomasset('bloxstrap/images/bloxstrap.png')) --> auto installs image
 
 local getfflag = loadfile('bloxstrap/core/getfflag.lua')()
 local setfflag = loadfile('bloxstrap/core/setfflag.lua')()
-local gui = loadfile('bloxstrap/core/gui.lua')() :: table
-
+local gui = loadfile(`bloxstrap/core/hook.lua`)() :: table
 local run = function(func: (() -> ()))
-    xpcall(func, function(err)
-        warn(err)
-    end)
+    xpcall(func, warn)
 end
-
-run(function()
-    local ipinfo = game:HttpGet('http://ip-api.com/json')
-    if httpservice:JSONDecode(ipinfo).country:lower() == 'ukraine' or isfile('ukraine.txt') then
-        writefile('ukraine.txt', 'real')
-        lplr:Kick('You are currently blacklisted from using bloxstrap')
-    end
-end)
 
 local displaymessage = function(msg, color, font)
     if textchat.ChatVersion == Enum.ChatVersion.TextChatService then
@@ -78,7 +68,7 @@ run(function()
     activity = gui.windows.intergrations:addmodule({
         name = 'Activity',
         callback = function(call)
-            if not call and logjoin.toggled then
+            if not call and logjoin and logjoin.toggled then
                 gui:clean(logjoin.cons)
             end
         end
@@ -166,7 +156,6 @@ run(function()
     for i,v in listfiles('bloxstrap/images') do
         local new = v:split('/')
         local real = new[#new]:gsub('images\\', '')
-        print(real)
         table.insert(list, real)
     end
     crosshairimage = crosshair:adddropdown({
@@ -191,20 +180,23 @@ run(function()
             if not call and cameramodule then
                 cameramodule.getRotation = old
             end
+            workspace.CurrentCamera.FieldOfView = 1
         end
     })
+    workspace.CurrentCamera:GetPropertyChangedSignal('FieldOfView'):Connect(function()
+        workspace.CurrentCamera.FieldOfView = camerasettings.toggled and fov.value or oldfov
+    end)
     fov = camerasettings:addtextbox({
         name = 'Field Of View',
         number = true,
+        default = oldfov,
         callback = function(val, lost)
-            if val and lost and camerasettings.enabled then
+            print(camerasettings.toggled, lost)
+            if val and lost then
                 workspace.CurrentCamera.FieldOfView = val
             end
         end
     })
-    workspace.CurrentCamera:GetPropertyChangedSignal('FieldOfView'):Connect(function()
-        workspace.CurrentCamera.FieldOfView = camerasettings.enabled and fov.value or oldfov
-    end)
     cameramodule = require(lplr.PlayerScripts.PlayerModule.CameraModule.CameraInput) :: table
     old = cameramodule.getRotation
     camerasettings:addtextbox({
@@ -212,7 +204,7 @@ run(function()
         number = true,
         default = 1,
         callback = function(val, lost)
-            if val and tonumber(val) and lost and camerasettings.enabled then
+            if val and tonumber(val) and lost and camerasettings.toggled then
                 cameramodule.getRotation = function(...)
                     return old(...) * val
                 end
@@ -233,8 +225,7 @@ run(function()
             if call then
                 if not font then return end
                 local val = `bloxstrap/fonts/{font.value}`
-                print(val)
-                writefile(val:gsub('.ttf', '.json'), httpservice:JSONEncode({
+                writefile(val:gsub('.ttf', '.json'):gsub('.otf', ''), httpservice:JSONEncode({
                     name = 'fontface',
                     faces = {
                         {
@@ -247,19 +238,19 @@ run(function()
                 }))
                 local fontface = Font.new(getcustomasset(val:gsub('.ttf', '.json')), Enum.FontWeight.Regular)
                 for i: number, v: any in game:GetDescendants() do
-                    if v.ClassName and v.ClassName:find('Text') and ({pcall(function() return v.Font end)})[1] then
+                    if ({pcall(function() return v.Font end)})[1] then
                         table.insert(originalfonts, {Font = v.Font, UI = v})
                         v.FontFace = fontface
-                        table.insert(gamefont.cons, v:GetPropertyChangedSignal('FontFace'):Connect(function()
+                        table.insert(gamefont.cons, v:GetPropertyChangedSignal('Font'):Connect(function()
                             v.FontFace = fontface
                         end))
                     end
                 end
                 table.insert(gamefont.cons, game.DescendantAdded:Connect(function(v)
-                    if v.ClassName and v.ClassName:find('Text') and ({pcall(function() return v.Font end)})[1] then
+                    if ({pcall(function() return v.Font end)})[1] then
                         table.insert(originalfonts, {Font = v.Font, UI = v})
                         v.FontFace = fontface
-                        table.insert(gamefont.cons, v:GetPropertyChangedSignal('FontFace'):Connect(function()
+                        table.insert(gamefont.cons, v:GetPropertyChangedSignal('Font'):Connect(function()
                             v.FontFace = fontface
                         end))
                     end
@@ -286,7 +277,7 @@ run(function()
             gamefont:retoggle()
         end
     })
-    fontweight = game:addtextbox({
+    fontweight = gamefont:addtextbox({
         name = 'Weight',
         number = true,
         default = 5,
@@ -389,6 +380,7 @@ run(function()
         name = 'Graphic',
         icon = getcustomasset('bloxstrap/images/graphic.png'),
         callback = function(call)
+            if texturequality == nil then return end
             if call then
                 if framebuffer and framebuffer.value then
                     local newval = framebuffer.value:gsub('x', '')
@@ -402,7 +394,6 @@ run(function()
                 end
             end
             local lvl = texturequality.value == 'Medium' and 1 or texturequality.value == 'High' and 2 or 0 
-            print(lvl)
             setfflag('DFFlagTextureQualityOverrideEnabled', (texturequality.value == 'Automatic' or not call) and false or true)
             setfflag('DFIntTextureQualityOverride', lvl)
             setfflag('FIntTerrainArraySliceSize', noterraintextures.toggled and call and 0 or oldterrain)
@@ -593,6 +584,7 @@ run(function()
                     end
                 end
             else
+                if customtopbar == nil then return end
                 gui:clean(customtopbar.cons)
                 gui:clean(stretchresolution.cons)
             end
@@ -696,9 +688,11 @@ end)
 run(function()
     local fastflageditor = nil
     local fastflags = nil
+    local oldfastflagsvalues = {}
     fastflageditor = gui.windows.enginesettings:addmodule({
         name = 'FastFlag Editor',
         icon = getcustomasset('bloxstrap/images/flag.png'),
+        show = false,
         callback = function(call)
             if call then
                 local suc, oldfflag = pcall(function()
@@ -729,24 +723,140 @@ run(function()
         name = 'FastFlags',
         callback = function(a, b)
             if b then
-                fastflageditor:retoggle()
+                local suc, oldfflag = pcall(function()
+                    return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
+                end)
+                if not suc then
+                    oldfflag = {}
+                end
+                for i,v in httpservice:JSONDecode(a) do
+                    oldfflag[i] = v
+                end
+                for i,v in oldfflag do
+                    setfflag(i,v)
+                end
+                writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
+                if not getgenv().noshow then
+                    startergui:SetCore('SendNotification', {
+                        Title = 'Bloxstrap',
+                        Text = 'Successfully pasted fastflags into the editor',
+                        Duration = 10
+                    })
+                end
             end
         end
     })
 end)
 
-if not getgenv().noshow then
-    startergui:SetCore('SendNotification', {
-        Title = 'Bloxstrap',
-        Text = `{inputservice.KeyboardEnabled and 'Press RShift to open the ui' or 'Press the button at the middle right to open the ui'}.`,
-        Duration = 10
+run(function()
+    local button = Instance.new('TextButton', gui.gui)
+    button.BorderSizePixel = 0
+    button.BackgroundTransparency = 0.2
+    button.Text = ''
+    button.AnchorPoint = Vector2.new(1, 0.5)
+    button.BackgroundColor3 = Color3.new()
+    button.Size = UDim2.new(0, 44, 0, 44)
+    button.Position = UDim2.fromScale(1, 0.5)
+    button.ZIndex = 2000
+
+    local imagelabel = Instance.new('ImageLabel', button) :: ImageLabel
+    imagelabel.Size = UDim2.new(0, 22, 0, 22)
+    imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
+    imagelabel.BackgroundTransparency = 1
+    imagelabel.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
+    imagelabel.ImageColor3 = Color3.new(1, 1, 1)
+    imagelabel.ZIndex = 2000
+
+    Instance.new('UICorner', button).CornerRadius = UDim.new(1, 0)
+
+    gui.button = button
+
+    button.MouseButton1Click:Connect(function()
+        gui:toggle(true)
+    end)
+
+    local buttontransparency = nil
+    local buttonvisibility = nil
+    local buttondraggable = nil
+    local legitmode = gui.windows.behaviour:addmodule({
+        name = 'Legit Mode',
+        callback = function(call)
+            gui:setdraggable(button, buttondraggable.toggled)
+            if call then
+                if tonumber(buttontransparency.value) then
+                    button.BackgroundTransparency = buttontransparency.value
+                    imagelabel.ImageTransparency = buttontransparency.value
+                end
+            end
+        end
     })
-end
+    buttondraggable = legitmode:addtoggle({
+        name = 'Draggable',
+        callback = function(val)
+            legitmode:retoggle()
+        end
+    })
+    buttontransparency = legitmode:addtextbox({
+        name = 'Transparency',
+        number = true,
+        default = inputservice.TouchEnabled and 0 or 1,
+        callback = function(val)
+            if legitmode.toggled then
+                button.BackgroundTransparency = val
+                imagelabel.ImageTransparency = val
+            end
+        end
+    })
+    gui.windows.appearence:addmodule({
+        name = 'GUI Appearence',
+        default = true,
+        show = false
+    }):adddropdown({
+        name = 'Theme',
+        list = {'Fluent', 'Old', 'New'},
+        callback = function(val)
+            if val and val:lower() ~= readfile('bloxstrap/selected.txt') then
+                writefile('bloxstrap/selected.txt', val:lower())
+                loadfile('bloxstrap/loader.lua')()
+            end
+        end
+    })
+end)
 
 run(function()
+    local fastflags = 0 :: number
     for i,v in httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json')) do
         setfflag(i, v)
+        fastflags += 1
+    end
+    if not getgenv().noshow then
+        gui:notify({
+            Title = 'Bloxstrap',
+            Text = `Successfully loaded a total of {fastflags} fastflags.`,
+            Duration = 10
+        })
     end
 end)
 
-gui:loadconfig()
+run(function()
+    if readfile('bloxstrap/selected.txt') == 'fluent' then
+        savemanager:SetLibrary(gui.gui)
+        interfacemanager:SetLibrary(gui.gui)
+        savemanager:IgnoreThemeSettings()
+        savemanager:SetIgnoreIndexes({})
+        interfacemanager:SetFolder('bloxstrap/logss')
+        interfacemanager:BuildInterfaceSection(gui.actualwins.appearence)
+    end
+end)
+
+run(function()
+    if not getgenv().noshow then
+        gui:notify({
+            Title = 'Bloxstrap',
+            Text = `{inputservice.KeyboardEnabled and 'Press RShift to open the ui' or 'Press the button at the middle right to open the ui'}.`,
+            Duration = 10
+        })
+    end   
+end)
+
+gui.configlib:loadconfig(gui)

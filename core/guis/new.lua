@@ -45,7 +45,7 @@ function lib:clean(cons)
 end
 
 function lib:setdraggable(gui, bool)
-    if not self.drags[gui] then
+    if self.drags[gui] == nil then
         local dragging
         local dragInput
         local dragStart
@@ -637,14 +637,8 @@ for i,v in {'Intergrations', 'Mods', 'Engine Settings'} do
                 end
                 
                 local configtab = configtable[tabapi.name] and configtable[tabapi.name][moduleargs.name] and configtable[tabapi.name][moduleargs.name][modargs.name]
-                if type(configtab) == 'table' and configtab.toggled then
-                    if modargs.name ~= 'Enabled' then
-                        api:call(configtab.toggled, true)
-                    else
-                        table.insert(lib.modules, api)
-                    end
-                elseif modargs.default then
-                    api:call(modargs.default, true)
+                if not configtab and modargs.default then
+                    api:call(modargs.default, modargs.default)
                 end
 
                 TextButton.MouseButton1Click:Connect(function()
@@ -724,9 +718,7 @@ for i,v in {'Intergrations', 'Mods', 'Engine Settings'} do
                 end
                       
                 local configtab = configtable[tabapi.name] and configtable[tabapi.name][moduleargs.name] and configtable[tabapi.name][moduleargs.name][modargs.name]
-                if type(configtab) == 'table' and configtab.value then
-                    api:call(configtab.value, modargs.number, true)
-                elseif modargs.default then
+                if not configtab and modargs.default then
                     api:call(modargs.default, modargs.number, true)
                 end
 
@@ -956,9 +948,7 @@ for i,v in {'Intergrations', 'Mods', 'Engine Settings'} do
                 lib.configs[tabapi.name][moduleargs.name][modapi.name] = api
                       
                 local configtab = configtable[tabapi.name] and configtable[tabapi.name][moduleargs.name] and configtable[tabapi.name][moduleargs.name][modapi.name]
-                if type(configtab) == 'table' and configtab.value then
-                    api:call(configtab.value)
-                elseif modapi.default then
+                if not configtab and modapi.default then
                     api:call(modapi.default)
                 end
 
@@ -993,11 +983,11 @@ for i,v in {'Intergrations', 'Mods', 'Engine Settings'} do
                     end
                     table.clear(moduleapi.cons)
                 end
-                moduleapi.enabled = call
+                moduleapi.toggled = call
                 b1.BackgroundTransparency = call and 0 or 1
                 b2.BackgroundTransparency = call and 0 or 1
                 if moduleargs.callback then
-                    task.spawn(moduleargs.callback, moduleapi.enabled)
+                    task.spawn(moduleargs.callback, moduleapi.toggled)
                 end
             end
         })
@@ -1441,13 +1431,7 @@ for i,v in {'Appearence', 'Behaviour'} do
                 end
                 
                 local configtab = configtable[tabapi.name] and configtable[tabapi.name][moduleargs.name] and configtable[tabapi.name][moduleargs.name][modargs.name]
-                if type(configtab) == 'table' and configtab.toggled then
-                    if modargs.name ~= 'Enabled' then
-                        api:call(configtab.toggled, true)
-                    else
-                        table.insert(lib.modules, api)
-                    end
-                elseif modargs.default then
+                if not configtab and modargs.default then
                     api:call(modargs.default)
                 end
 
@@ -1528,9 +1512,7 @@ for i,v in {'Appearence', 'Behaviour'} do
                 end
                       
                 local configtab = configtable[tabapi.name] and configtable[tabapi.name][moduleargs.name] and configtable[tabapi.name][moduleargs.name][modargs.name]
-                if type(configtab) == 'table' and configtab.value then
-                    api:call(configtab.value, modargs.number, true)
-                elseif modargs.default then
+                if not configtab and modargs.default then
                     api:call(modargs.default, modargs.number, true)
                 end
 
@@ -1760,9 +1742,7 @@ for i,v in {'Appearence', 'Behaviour'} do
                 lib.configs[tabapi.name][moduleargs.name][modapi.name] = api
                       
                 local configtab = configtable[tabapi.name] and configtable[tabapi.name][moduleargs.name] and configtable[tabapi.name][moduleargs.name][modapi.name]
-                if type(configtab) == 'table' and configtab.value then
-                    api:call(configtab.value)
-                elseif modapi.default then
+                if not configtab and modapi.default then
                     api:call(modapi.value)
                 end
 
@@ -1797,11 +1777,11 @@ for i,v in {'Appearence', 'Behaviour'} do
                     end
                     table.clear(moduleapi.cons)
                 end
-                moduleapi.enabled = call
+                moduleapi.toggled = call
                 b1.BackgroundTransparency = call and 0 or 1
                 b2.BackgroundTransparency = call and 0 or 1
                 if moduleargs.callback then
-                    task.spawn(moduleargs.callback, moduleapi.enabled)
+                    task.spawn(moduleargs.callback, moduleapi.toggled)
                 end
             end
         })
@@ -1862,78 +1842,10 @@ if inputservice.KeyboardEnabled then
             lib:toggle(true)
         end
     end)
-else
-    local button = Instance.new('TextButton', lib.gui)
-    button.BorderSizePixel = 0
-    button.BackgroundTransparency = 0.2
-    button.Text = ''
-    button.AnchorPoint = Vector2.new(1, 0.5)
-    button.BackgroundColor3 = Color3.new()
-    button.Size = UDim2.new(0, 44, 0, 44)
-    button.Position = UDim2.fromScale(1, 0.5)
-    button.ZIndex = 2000
-
-    local imagelabel = Instance.new('ImageLabel', button) :: ImageLabel
-    imagelabel.Size = UDim2.new(0, 22, 0, 22)
-    imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
-    imagelabel.BackgroundTransparency = 1
-    imagelabel.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
-    imagelabel.ImageColor3 = Color3.new(1, 1, 1)
-    imagelabel.ZIndex = 2000
-
-    Instance.new('UICorner', button).CornerRadius = UDim.new(1, 0)
-
-    lib.button = button
-
-    button.MouseButton1Click:Connect(function()
-        lib:toggle(true)
-    end)
-
-    local buttontransparency = nil
-    local buttonvisibility = nil
-    local buttondraggable = nil
-    local legitmode = lib.windows.behaviour:addmodule({
-        name = 'Legit Mode',
-        callback = function(call)
-            if buttondraggable then
-                lib:setdraggable(button, buttondraggable.on)
-            end
-            if call then
-                button.Visible = buttonvisibility.toggled
-                if buttontransparency.value then
-                    button.BackgroundTransparency = buttontransparency.value
-                    imagelabel.ImageTransparency = buttontransparency.value
-                end
-            end
-        end
-    })
-    buttonvisibility = legitmode:addtoggle({
-        name = 'Visible',
-        callback = function(val)
-            if legitmode.enabled then
-                button.Visible = val
-            end
-        end
-    })
-    buttondraggable = legitmode:addtoggle({
-        name = 'Draggable',
-        callback = function(val)
-            legitmode:retoggle()
-        end
-    })
-    buttontransparency = legitmode:addtextbox({
-        name = 'Transparency',
-        number = true,
-        callback = function(val)
-            if legitmode.enabled then
-                button.BackgroundTransparency = val
-                imagelabel.ImageTransparency = val
-            end
-        end
-    })
 end
 
 function lib:loadconfig()
+    lib:toggle(true)
     for i,v in self.modules do
         v:call(true, true, true)
     end
