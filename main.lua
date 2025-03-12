@@ -747,7 +747,10 @@ run(function()
 end)
 
 run(function()
-    local button = Instance.new('TextButton', gui.gui)
+    local realgui = Instance.new('ScreenGui')
+    realgui.Parent = gethui()
+        
+    local button = Instance.new('TextButton', realgui)
     button.BorderSizePixel = 0
     button.BackgroundTransparency = 0.2
     button.Text = ''
@@ -805,7 +808,7 @@ run(function()
             end
         end
     })
-    gui.windows.appearence:addmodule({
+    --[[gui.windows.appearence:addmodule({
         name = 'GUI Appearence',
         default = true,
         show = false
@@ -818,7 +821,7 @@ run(function()
                 loadfile('bloxstrap/loader.lua')()
             end
         end
-    })
+    })]]
 end)
 
 run(function()
