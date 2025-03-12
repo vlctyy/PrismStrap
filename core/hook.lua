@@ -96,6 +96,7 @@ else
         Theme = 'Darker',
         MinimizeKey = Enum.KeyCode.RightShift
     })
+    elements.win = window
     --savemanager:SetLibrary(oldgui)
 end
 
