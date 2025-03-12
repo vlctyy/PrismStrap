@@ -1,5 +1,4 @@
-local ReplicatedFirst = game:GetService("ReplicatedFirst")
-local UserInputService = game:GetService("UserInputService")
+
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
 end or cloneref
@@ -42,7 +41,7 @@ print(getcustomasset('bloxstrap/images/bloxstrap.png')) --> auto installs image
 
 local getfflag = loadfile('bloxstrap/core/getfflag.lua')()
 local setfflag = loadfile('bloxstrap/core/setfflag.lua')()
-local gui = loadfile(`bloxstrap/core/hook.lua`)() :: table
+local gui = getgenv().bloxstrapgui or loadfile(`bloxstrap/core/hook.lua`)() :: table
 local run = function(func: (() -> ()))
     xpcall(func, warn)
 end
@@ -145,7 +144,7 @@ run(function()
                 imagelabel.Position = UDim2.new(0.5, 0, 0.5, 0)
                 imagelabel.BackgroundTransparency = 1
                 imagelabel.Image = getcustomasset('bloxstrap/images/'..crosshairimage.value) or ''
-                Instance.new('UICorner', imagelabel).Scale = gui.scale
+                Instance.new('UIScale', imagelabel).Scale = gui.scale
                 table.insert(crosshair.cons, imagelabel)
             end
         end
@@ -773,7 +772,7 @@ run(function()
     gui.button = button
 
     button.MouseButton1Click:Connect(function()
-        gui:toggle(true)
+        gui:toggle()
     end)
 
     local buttontransparency = nil
@@ -781,6 +780,7 @@ run(function()
     local buttondraggable = nil
     local legitmode = gui.windows.behaviour:addmodule({
         name = 'Legit Mode',
+        show = false,
         callback = function(call)
             gui:setdraggable(button, buttondraggable.toggled)
             if call then
@@ -808,7 +808,7 @@ run(function()
             end
         end
     })
-    --[[gui.windows.appearence:addmodule({
+    gui.windows.appearence:addmodule({
         name = 'GUI Appearence',
         default = true,
         show = false
@@ -821,7 +821,7 @@ run(function()
                 loadfile('bloxstrap/loader.lua')()
             end
         end
-    })]]
+    })
 end)
 
 run(function()
@@ -836,17 +836,6 @@ run(function()
             Text = `Successfully loaded a total of {fastflags} fastflags.`,
             Duration = 10
         })
-    end
-end)
-
-run(function()
-    if readfile('bloxstrap/selected.txt') == 'fluent' then
-        savemanager:SetLibrary(gui.gui)
-        interfacemanager:SetLibrary(gui.gui)
-        savemanager:IgnoreThemeSettings()
-        savemanager:SetIgnoreIndexes({})
-        interfacemanager:SetFolder('bloxstrap/logss')
-        interfacemanager:BuildInterfaceSection(gui.actualwins.appearence)
     end
 end)
 
