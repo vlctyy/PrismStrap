@@ -31,6 +31,7 @@ function configapi:loadconfig(lib)
         end
     end
     task.spawn(function()
+        warn('running')
         repeat
             if configapi.updateTick <= tick() then
                 writefile('bloxstrap/logs/profile.json', httpservice:JSONEncode(lib.modules))
