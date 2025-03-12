@@ -850,4 +850,4 @@ run(function()
     end   
 end)
 
-gui.configlib:loadconfig(gui)
+task.delay(3, function() gui.configlib:loadconfig(gui) end)
