@@ -16,7 +16,7 @@ if isfolder('Bloxstrap') and isfolder('Bloxstrap/sounds') then
     delfolder('Bloxstrap')
 end
 if isfolder('bloxstrap') and isfolder('bloxstrap/core') and not isfolder('bloxstrap/core/guis') then
-    
+    delfolder('bloxstrap')
 end
 if not isfolder('bloxstrap') or not isfolder('bloxstrap/logs') then
     makefolder('bloxstrap')
