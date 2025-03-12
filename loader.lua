@@ -27,7 +27,7 @@ if not isfolder('bloxstrap') or not isfolder('bloxstrap/logs') then
     writefile('bloxstrap/main.lua', `loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/main.lua', true))()`)
     writefile('bloxstrap/audios/oof sound.mp3', game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/audios/oof sound.mp3', true))
 end
-if not isfile('bloxstrap/logs/profile.json') the 
+if not isfile('bloxstrap/logs/profile.json') then
     writefile('bloxstrap/logs/profile.json', '{}')
 end
 if not isfile('bloxstrap/selected.txt') then
