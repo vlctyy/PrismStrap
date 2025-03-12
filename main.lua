@@ -41,7 +41,8 @@ print(getcustomasset('bloxstrap/images/bloxstrap.png')) --> auto installs image
 
 local getfflag = loadfile('bloxstrap/core/getfflag.lua')()
 local setfflag = loadfile('bloxstrap/core/setfflag.lua')()
-local gui = getgenv().bloxstrapgui or loadfile(`bloxstrap/core/hook.lua`)() :: table
+local gui = loadfile(`bloxstrap/core/hook.lua`)() :: table
+print('gui state: '.. gui)
 local run = function(func: (() -> ()))
     xpcall(func, warn)
 end
