@@ -27,7 +27,9 @@ if not isfolder('bloxstrap') or not isfolder('bloxstrap/logs') then
     writefile('bloxstrap/main.lua', `loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/main.lua', true))()`)
     writefile('bloxstrap/audios/oof sound.mp3', game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/audios/oof sound.mp3', true))
 end
-writefile('bloxstrap/selected.txt', 'fluent')
+if not isfile('bloxstrap/selected.txt') then
+    writefile('bloxstrap/selected.txt', 'fluent')
+end
 assert(setfflag, `Your executor ({identifyexecutor()}) doesn't have the required functions for this to work.`)
 writefile('bloxstrap/logs/error.txt', '')
 return loadfile('bloxstrap/main.lua')()
