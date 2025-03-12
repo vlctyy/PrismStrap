@@ -289,6 +289,7 @@ local ScreenGui = Create("ScreenGui", CoreGui, {
 		Name = "Scale"
 	})
 })
+redzlib.GUI = ScreenGui
 
 local ScreenFind = CoreGui:FindFirstChild(ScreenGui.Name)
 if ScreenFind and ScreenFind ~= ScreenGui then
