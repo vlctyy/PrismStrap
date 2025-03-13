@@ -18,9 +18,8 @@ function configapi:getdata(args, json)
     return body
 end
 function configapi:loadconfig(lib)
-    local decoded = httpservice:JSONDecode(readfile('bloxstrap/logs/profile.json')) :: table
     for i: string, v: table in lib.modules do
-        local module = decoded[i]
+        local module = lib.configs[i]
         if module then
             table.foreach(v, warn)
             if module.toggled then

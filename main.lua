@@ -44,7 +44,7 @@ local setfflag = loadfile('bloxstrap/core/setfflag.lua')()
 local gui = loadfile(`bloxstrap/core/hook.lua`)() :: table
 table.foreach(gui, print)
 local run = function(func: (() -> ()))
-    xpcall(func, warn)
+    return pcall(func)
 end
 
 local displaymessage = function(msg, color, font)
