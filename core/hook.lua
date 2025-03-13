@@ -88,7 +88,7 @@ function elements:setdraggable(gui, bool)
         inputservice.InputChanged:Connect(function(input)
             if self.drags[gui] and input == dragInput and dragging then
                 local delta = input.Position - dragStart
-                tweenservice:Create(gui, TweenInfo.new(0.06, Enum.EasingStyle.Quad), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play()
+                tweenservice:Create(gui, TweenInfo.new(0.04, Enum.EasingStyle.Quad), {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}):Play()
             end
         end)
     end
@@ -112,7 +112,6 @@ else
         Theme = 'Darker',
         MinimizeKey = Enum.KeyCode.RightShift
     })
-    oldgui.GUI:FindFirstChildOfClass('Frame').Draggable = true
     elements.win = window
     --savemanager:SetLibrary(oldgui)
 end
@@ -297,7 +296,7 @@ else
                     end
                 end
                 if args.default then
-                    oldgui.Options[args.name]:SetValue(args.default)
+                    moduletoggle:SetValue(args.default)
                 end
                 return api
             end
