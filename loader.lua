@@ -23,9 +23,9 @@ if not isfolder('bloxstrap') or not isfolder('bloxstrap/logs') then
     for i: number, v: string in {'audios', 'core', 'images', 'logs', 'fonts', 'logs/cache'} do
         makefolder(`bloxstrap/{v}`)
     end
-    writefile('bloxstrap/loader.lua', `loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/loader.lua', true))()`)
-    writefile('bloxstrap/main.lua', `loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/main.lua', true))()`)
-    writefile('bloxstrap/audios/oof sound.mp3', game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/audios/oof sound.mp3', true))
+    writefile('bloxstrap/loader.lua', `loadstring(game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/refs/heads/main/loader.lua', true))()`)
+    writefile('bloxstrap/main.lua', `loadstring(game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/refs/heads/main/main.lua', true))()`)
+    writefile('bloxstrap/audios/oof sound.mp3', game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/refs/heads/main/audios/oof sound.mp3', true))
 end
 if not isfile('bloxstrap/logs/profile.json') then
     writefile('bloxstrap/logs/profile.json', '{}')
