@@ -14,7 +14,7 @@ local loadfile = function(file, errpath)
         return getgenv().loadfile(file, errpath)
     else
         local result = request({
-            Url = `https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/main/{file:gsub('bloxstrap/', '')}`,
+            Url = `https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/{file:gsub('bloxstrap/', '')}`,
             Method = 'GET'
         })
         if result.StatusCode ~= 404 then
