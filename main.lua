@@ -376,6 +376,7 @@ run(function()
     local oldterrain = getfflag('FIntTerrainArraySliceSize')
     gamegraphic = gui.windows.enginesettings:addmodule({
         name = 'Graphic',
+        show = false,
         icon = getcustomasset('bloxstrap/images/graphic.png'),
         callback = function(call)
             if texturequality == nil then return end
@@ -541,7 +542,8 @@ run(function()
     local stretchresolution = nil
     local uiscales = {}
     interface = gui.windows.enginesettings:addmodule({
-        name = 'Interface',
+        name = 'Interface Settings',
+        show = false,
         icon = getcustomasset('bloxstrap/images/interface.png'),
         callback = function(call)
             if call then
@@ -610,6 +612,7 @@ run(function()
     rendering = gui.windows.enginesettings:addmodule({
         name = 'Rendering',
         icon = getcustomasset('bloxstrap/images/rendering.png'),
+        show = false,
         callback = function(call)
             if call and tonumber(renderinggraphic.value) then
                 if tonumber(renderinggraphic.value) > 21 then
@@ -691,30 +694,8 @@ run(function()
         name = 'FastFlag Editor',
         icon = getcustomasset('bloxstrap/images/flag.png'),
         show = false,
-        callback = function(call)
-            if call then
-                local suc, oldfflag = pcall(function()
-                    return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
-                end)
-                if not suc then
-                    oldfflag = {}
-                end
-
-                for i,v in httpservice:JSONDecode(fastflags.value) do
-                    oldfflag[i] = v
-                end
-                for i,v in oldfflag do
-                    setfflag(i,v)
-                end
-                writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
-                if not getgenv().noshow then
-                    startergui:SetCore('SendNotification', {
-                        Title = 'Bloxstrap',
-                        Text = 'Successfully pasted fastflags into the editor',
-                        Duration = 10
-                    })
-                end
-            end
+        callback = function()
+            
         end
     })
     fastflags = fastflageditor:addtextbox({
@@ -732,6 +713,15 @@ run(function()
                 end
                 for i,v in oldfflag do
                     setfflag(i,v)
+                    fastflageditor:addtextbox({
+                        name = tostring(i),
+                        default = tostring(v),
+                        callback = function(val, lost)
+                            if lost then
+                                setfflag(i, val)
+                            end
+                        end
+                    })
                 end
                 writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
                 if not getgenv().noshow then
