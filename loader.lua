@@ -30,9 +30,9 @@ end
 if not isfile('bloxstrap/logs/profile.json') then
     writefile('bloxstrap/logs/profile.json', '{}')
 end
-if not isfile('bloxstrap/selected.txt') then
-    writefile('bloxstrap/selected.txt', 'fluent')
-end
+--if not isfile('bloxstrap/selected.txt') then
+    writefile('bloxstrap/selected.txt', 'old')
+--end
 assert(setfflag, `Your executor ({identifyexecutor()}) doesn't have the required functions for this to work.`)
 writefile('bloxstrap/logs/error.txt', '')
 return loadfile('bloxstrap/main.lua')()
