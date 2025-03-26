@@ -23,6 +23,7 @@ local loadfile = function(file, errpath)
             Method = 'GET'
         })
         if result.StatusCode ~= 404 then
+            writefile(file, result.Body)
             return loadstring(result.Body)
         else
             error('Invalid file')
