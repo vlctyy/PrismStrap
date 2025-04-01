@@ -7,9 +7,7 @@ function configapi:getdata(args, json)
         result = {}
     } :: table
     for i: string, v: table in args.library.modules do
-        if json then
-
-        else
+        if not json then
             if v.toggled or v.value then
                 body.result[i] = v
             end
@@ -20,16 +18,16 @@ end
 function configapi:loadconfig(lib)
     for i: string, v: table in lib.modules do
         local module = lib.configs[i]
-        if module then
-            table.foreach(v, warn)
-            if module.toggled then
+        if module and not module.exception then
+            if module.toggled == true then
                 v:setstate(module.toggled)
-            elseif module.value then
+            elseif module.value ~= nil then
                 v:setvalue(module.value)
             end
         end
     end
     task.spawn(function()
+        task.wait(4)
         repeat
             if configapi.updateTick <= tick() then
                 writefile('bloxstrap/logs/profile.json', httpservice:JSONEncode(lib.modules))

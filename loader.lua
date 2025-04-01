@@ -1,12 +1,14 @@
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
 end or cloneref :: (any)
+getgenv().developer = true
 getgenv().error = function(msg, lvl)
     appendfile('bloxstrap/logs/error.txt', `{msg}\n`)
     --if getgenv().developer then
         task.spawn(getrenv().error, msg, lvl)
     --end
 end
+getgenv().developer = true
 getgenv().assert = function(a, b)
     if not a then
         error(b)

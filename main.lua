@@ -9,9 +9,10 @@ local lighting = cloneref(game:FindService('Lighting')) :: Lighting
 local textchat = cloneref(game:FindService('TextChatService')) :: TextChatService
 local startergui = cloneref(game:FindService('StarterGui')) :: StarterGui
 local coregui = cloneref(game:FindService('CoreGui')) :: CoreGui
+local virtualInputManager = cloneref(game:GetService('VirtualInputManager')) :: VirtualInputManager
 local inputservice = cloneref(game:FindService('UserInputService')) :: UserInputService
 local lplr = players.LocalPlayer :: Player
-local request = fluxus and fluxus.request or identifyexecutor() == 'Delta' and http.request or syn and syn.request or request
+local request = identifyexecutor() == 'Delta' and http.request or syn and syn.request or request
 
 local loadfile = function(file, errpath)
     if getgenv().developer then
@@ -23,12 +24,33 @@ local loadfile = function(file, errpath)
             Method = 'GET'
         })
         if result.StatusCode ~= 404 then
+            writefile(file, result.Body)
             return loadstring(result.Body)
         else
             error('Invalid file')
         end
     end
 end
+
+local realgui = Instance.new('ScreenGui', gethui())
+  
+local macroui = Instance.new('Frame', realgui)
+macroui.BackgroundTransparency = 1
+macroui.Size = UDim2.fromScale(1, 1)
+macroui.Visible = false
+macroui.AnchorPoint = Vector2.new(0.5, 0.5)
+macroui.Position = UDim2.fromScale(0.5, 0.5)
+
+local recordlabel = Instance.new('TextLabel', macroui)
+recordlabel.Size = UDim2.fromOffset(50, 50)
+recordlabel.AnchorPoint = Vector2.new(0.5, 0.1)
+recordlabel.Position = UDim2.fromScale(0.5, 0.1)
+recordlabel.BackgroundTransparency = 1
+recordlabel.TextSize = 15
+recordlabel.Font = Enum.Font.Arial
+recordlabel.RichText = true
+recordlabel.TextColor3 = Color3.new(1, 1, 1)
+recordlabel.Text = 'Select macro\'s click position'
 
 local getcustomasset = function(path: string)
     if not isfile(path) then
@@ -42,9 +64,9 @@ print(getcustomasset('bloxstrap/images/bloxstrap.png')) --> auto installs image
 local getfflag = loadfile('bloxstrap/core/getfflag.lua')()
 local setfflag = loadfile('bloxstrap/core/setfflag.lua')()
 local gui = loadfile(`bloxstrap/core/hook.lua`)() :: table
-table.foreach(gui, print)
+
 local run = function(func: (() -> ()))
-    return pcall(func)
+    xpcall(func, warn)
 end
 
 local displaymessage = function(msg, color, font)
@@ -59,12 +81,15 @@ local displaymessage = function(msg, color, font)
     end
 end
 
+local bloxstrapbutton = gui:addbutton(realgui)
+
 --> inter
 run(function()
     local activity = nil
     local logjoin = nil
     activity = gui.windows.intergrations:addmodule({
         name = 'Activity',
+        show = false,
         callback = function(call)
             if not call and logjoin and logjoin.toggled then
                 gui:clean(logjoin.cons)
@@ -132,6 +157,145 @@ run(function()
 end)
 
 run(function()
+    local streamermode = nil
+    streamermode = gui.windows.mods:addmodule({
+        name = 'Streamer Mode',
+        desc = 'Hides every person in-game\'s username (only works with new chat).',
+        callback = function(call)
+            if call then
+                table.insert(streamermode.cons, coregui.ExperienceChat.appLayout.chatWindow.scrollingView.bottomLockedScrollView.RCTScrollView.RCTScrollContentView.ChildAdded:Connect(function(frame)
+                    if frame:FindFirstChild('TextMessage') then
+                        local text = #tostring(frame.TextMessage.PrefixText)
+                        frame.TextMessage.PrefixText = tostring(math.random(2, text))
+                    end
+                end))
+                for i, frame in coregui.ExperienceChat.appLayout.chatWindow.scrollingView.bottomLockedScrollView.RCTScrollView.RCTScrollContentView:GetChildren() do
+                    if frame:FindFirstChild('TextMessage') then
+                        local text = #tostring(frame.TextMessage.PrefixText)
+                        frame.TextMessage.PrefixText = tostring(math.random(2, text))
+                    end
+                end
+                table.insert(coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame.ChildAdded:Connect(function(v)
+                    v.Visible = false
+                end))
+                for i,v in coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame:GetChildren() do
+                    v.Visible = false
+                end
+            end
+        end
+    })
+end)
+
+run(function()
+    local macro = nil
+    local macromode = nil
+    local macroshowpos = nil
+    local macroname = nil
+    local macrocps = nil
+    
+    local macroapis = {}
+    
+    local function addMacro(name, vec2, togglevec2)
+        local toggled = false
+        local togglebutton = gui:addbutton(realgui, true, UDim2.fromOffset(55, 55))
+        togglebutton.Position = UDim2.fromOffset(togglevec2.X, togglevec2.Y)
+        togglebutton.Text = name
+        togglebutton.TextSize = 14.5
+        togglebutton.TextWrapped = true
+        togglebutton.MouseButton1Click:Connect(function()
+            toggled = not toggled
+            togglebutton.BackgroundColor3 = toggled and Color3.fromRGB(0, 255, 0) or Color3.new()
+            if toggled then
+                repeat
+                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
+                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                    task.wait(1 / (macrocps.value or 7))
+                until not toggled or not togglebutton.Parent
+            end
+        end)
+        
+        gui:setdraggable(togglebutton, gui.gui.Enabled)
+        
+        table.insert(macroapis, {
+            toggle = togglebutton,
+            button = {Destroy = function() end}
+        })
+    end
+    macro = gui.windows.mods:addmodule({
+        name = 'Macro',
+        show = false
+    })
+    local attempted = 0
+    macro:addbutton({
+        name = 'Add Macro',
+        callback = function()
+            if macroname.value == nil then 
+                gui:notify({
+                    desc = 'Please make a macro name first.'
+                })
+                return 
+            end
+            macroui.Visible = true
+            gui:toggle(false)
+            bloxstrapbutton.Visible = false
+            attempted = 1
+        end
+    })
+    macro:addbutton({
+        name = 'Reset All Macros',
+        callback = function()
+            for i,v in macroapis do 
+                v.toggle:Destroy()
+                v.button:Destroy()
+            end
+            table.clear(macroapis)
+        end
+    })
+    macroshowpos = macro:addtoggle({
+        name = 'Show Macro positions',
+        default = true
+    })
+    macrocps = macro:addtextbox({
+        name = 'CPS (Clicks per second)',
+        number = true,
+        default = 7
+    })
+    macroname = macro:addtextbox({
+        name = 'Macro Name',
+    })
+    macromode = macro:adddropdown({
+        name = 'Macro Mode',
+        list = {'Input'},
+        default = 1
+    })
+  
+    gui.gui:GetPropertyChangedSignal('Enabled'):Connect(function()
+        for i,v in macroapis do
+            gui:setdraggable(v.toggle, gui.gui.Enabled)
+        end
+    end)
+    
+    local clickpos = nil
+    inputservice.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if attempted == 1 then
+                attempted += 1
+                clickpos = input.Position
+                recordlabel.Text = 'Select macro\'s click position'
+            elseif attempted >= 2 then
+                macroui.Visible = false
+                recordlabel.Text = 'Select macro\'s toggle position'
+                addMacro(macroname.value, input.Position, clickpos)
+                clickpos = nil
+                attempted = 0
+                gui:toggle()
+                bloxstrapbutton.Visible = true
+            end
+        end
+    end)
+end)
+
+run(function()
     local crosshair = nil
     local crosshairimage = nil
     crosshair = gui.windows.mods:addmodule({
@@ -173,12 +337,13 @@ run(function()
     local oldfov = workspace.CurrentCamera.FieldOfView
     camerasettings = gui.windows.mods:addmodule({
         name = 'Camera',
+        show = false,
         icon = getcustomasset('bloxstrap/images/camera.png'),
         callback = function(call)
             if not call and cameramodule then
                 cameramodule.getRotation = old
             end
-            workspace.CurrentCamera.FieldOfView = 1
+            workspace.CurrentCamera.FieldOfView = oldfov
         end
     })
     workspace.CurrentCamera:GetPropertyChangedSignal('FieldOfView'):Connect(function()
@@ -189,7 +354,7 @@ run(function()
         number = true,
         default = oldfov,
         callback = function(val, lost)
-            print(camerasettings.toggled, lost)
+            --print(camerasettings.toggled, lost)
             if val and lost then
                 workspace.CurrentCamera.FieldOfView = val
             end
@@ -218,12 +383,13 @@ run(function()
     local originalfonts = {}
     gamefont = gui.windows.mods:addmodule({
         name = 'Game Font',
+        show = false,
         icon = getcustomasset('bloxstrap/images/fontico.png'),
         callback = function(call)
-            if call then
+            if call and font.value ~= 'None' then
                 if not font then return end
                 local val = `bloxstrap/fonts/{font.value}`
-                writefile(val:gsub('.ttf', '.json'):gsub('.otf', ''), httpservice:JSONEncode({
+                writefile(val:gsub('.ttf', '.json'):gsub('.otf', '.json'), httpservice:JSONEncode({
                     name = 'fontface',
                     faces = {
                         {
@@ -234,7 +400,7 @@ run(function()
                         }
                     }
                 }))
-                local fontface = Font.new(getcustomasset(val:gsub('.ttf', '.json')), Enum.FontWeight.Regular)
+                local fontface = Font.new(getcustomasset(val:gsub('.ttf', '.json'):gsub('.otf', '.json')), Enum.FontWeight.Regular)
                 for i: number, v: any in game:GetDescendants() do
                     if ({pcall(function() return v.Font end)})[1] then
                         table.insert(originalfonts, {Font = v.Font, UI = v})
@@ -263,20 +429,20 @@ run(function()
             end
         end
     })
-    local list = {}
+    local list = {'None'}
     for i,v in listfiles('bloxstrap/fonts') do
         local new = v:gsub('bloxstrap/fonts/', ''):gsub('./', '')
         table.insert(list, new)
     end
     font = gamefont:adddropdown({
-        name = 'Font',
+        name = 'Custom Font',
         list = list,
         callback = function()
             gamefont:retoggle()
         end
     })
     fontweight = gamefont:addtextbox({
-        name = 'Weight',
+        name = 'Font Weight',
         number = true,
         default = 5,
         callback = function(val)
@@ -298,6 +464,7 @@ run(function()
     local old = lighting.FogEnd
     gamelighting = gui.windows.mods:addmodule({
         name = 'Lighting',
+        show = false,
         icon = getcustomasset('bloxstrap/images/lighting.png'),
         callback = function(call)
             if nofog and nofog.toggled then
@@ -652,6 +819,7 @@ run(function()
     general = gui.windows.enginesettings:addmodule({
         name = 'General',
         icon = getcustomasset('bloxstrap/images/general.png'),
+        show = false,
         callback = function(call)
             if call then
                 if generalvolume.value ~= nil then
@@ -725,10 +893,8 @@ run(function()
                 end
                 writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
                 if not getgenv().noshow then
-                    startergui:SetCore('SendNotification', {
-                        Title = 'Bloxstrap',
-                        Text = 'Successfully pasted fastflags into the editor',
-                        Duration = 10
+                    gui:notify({
+                        desc = 'Loaded fflags'
                     })
                 end
             end
@@ -737,18 +903,7 @@ run(function()
 end)
 
 run(function()
-    local realgui = Instance.new('ScreenGui')
-    realgui.Parent = gethui()
-        
-    local button = Instance.new('TextButton', realgui)
-    button.BorderSizePixel = 0
-    button.BackgroundTransparency = 0.2
-    button.Text = ''
-    button.AnchorPoint = Vector2.new(1, 0.5)
-    button.BackgroundColor3 = Color3.new()
-    button.Size = UDim2.new(0, 44, 0, 44)
-    button.Position = UDim2.fromScale(1, 0.5)
-    button.ZIndex = 2000
+    local button = bloxstrapbutton
 
     local imagelabel = Instance.new('ImageLabel', button) :: ImageLabel
     imagelabel.Size = UDim2.new(0, 22, 0, 22)
@@ -757,8 +912,6 @@ run(function()
     imagelabel.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
     imagelabel.ImageColor3 = Color3.new(1, 1, 1)
     imagelabel.ZIndex = 2000
-
-    Instance.new('UICorner', button).CornerRadius = UDim.new(1, 0)
 
     gui.button = button
 
@@ -773,19 +926,12 @@ run(function()
         name = 'Legit Mode',
         show = false,
         callback = function(call)
-            gui:setdraggable(button, buttondraggable.toggled)
             if call then
                 if tonumber(buttontransparency.value) then
                     button.BackgroundTransparency = buttontransparency.value
                     imagelabel.ImageTransparency = buttontransparency.value
                 end
             end
-        end
-    })
-    buttondraggable = legitmode:addtoggle({
-        name = 'Draggable',
-        callback = function(val)
-            legitmode:retoggle()
         end
     })
     buttontransparency = legitmode:addtextbox({
@@ -805,9 +951,9 @@ run(function()
         show = false
     }):adddropdown({
         name = 'Theme',
-        list = {'Fluent', 'Old', 'New'},
+        list = {'Fluent'},
         callback = function(val)
-            if val and val:lower() ~= readfile('bloxstrap/selected.txt') then
+            if val and val:lower() ~= readfile('bloxstrap/selected.txt'):lower() then
                 writefile('bloxstrap/selected.txt', val:lower())
                 loadfile('bloxstrap/loader.lua')()
             end
@@ -824,7 +970,7 @@ run(function()
     if not getgenv().noshow then
         gui:notify({
             Title = 'Bloxstrap',
-            Text = `Successfully loaded a total of {fastflags} fastflags.`,
+            Description = `Successfully loaded a total of {fastflags} fastflags.`,
             Duration = 10
         })
     end
@@ -834,10 +980,16 @@ run(function()
     if not getgenv().noshow then
         gui:notify({
             Title = 'Bloxstrap',
-            Text = `{inputservice.KeyboardEnabled and 'Press RShift to open the ui' or 'Press the button at the middle right to open the ui'}.`,
+            Description = `{inputservice.KeyboardEnabled and 'Press RShift to open the ui' or 'Press the button at the middle right to open the ui'}.`,
             Duration = 10
         })
     end   
+end)
+
+run(function()
+    if coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame:FindFirstChild('p_7670822523') then
+        coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame.p_7670822523.ChildrenFrame.NameFrame.BGFrame.OverlayFrame.PlayerIcon.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
+    end
 end)
 
 task.delay(3, function() 

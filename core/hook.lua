@@ -18,12 +18,14 @@ local loadfile = function(file, errpath)
             Method = 'GET'
         })
         if result.StatusCode ~= 404 then
+            writefile(file, result.Body)
             return loadstring(result.Body)
         else
             error('Invalid file')
         end
     end
 end
+
 local elements = {
     windows = {},
     assets = {
@@ -43,13 +45,74 @@ local elements = {
     actualwins = {},
     configlib = loadfile('bloxstrap/core/config.lua')(),
     gui = nil,
-    scale = 1
+    scale = 1,
+    aprilfool = os.date('%m%d') == '0401'
 } :: table
 
 local guitype = readfile('bloxstrap/selected.txt')
 local oldgui = loadfile(`bloxstrap/core/guis/{guitype}.lua`)()
 elements.gui = oldgui.GUI
 elements.gui.IgnoreGuiInset = true
+
+local getString = function(...)
+    if elements.aprilfool then
+        local str = ''
+        for i = 5, math.random(10, 20) do
+            str ..= string.char(32, 126)
+        end
+        return str
+    end
+    return ...
+end
+
+local ScreenGui = Instance.new('ScreenGui', gethui and gethui() or cloneref(game:GetService('CoreGui'))) 
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local Frame = Instance.new('Frame', ScreenGui) 
+Frame.AnchorPoint = Vector2.new(1, 1)
+Frame.BackgroundColor3 = Color3.new(1, 1, 1)
+Frame.BackgroundTransparency = 1
+Frame.ClipsDescendants = false
+Frame.Active = false
+Frame.Position = UDim2.new(1, -30, 1, -30)
+Frame.BorderSizePixel = 0
+Frame.Size = UDim2.new(0, 310, 1, -30)
+
+local UIListLayout = Instance.new('UIListLayout', Frame) 
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+UIListLayout.Padding = UDim.new(0, 20)
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+if elements.aprilfool then
+    for i,v in game:GetDescendants() do
+        if v.ClassName == 'Part' or v.ClassName == 'MeshPart' then
+            v.Color = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+        elseif v.ClassName == 'Frame' then
+            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
+            v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+        elseif v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' then
+            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
+            v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+            v.Text = getString()
+            v.TextTransparency = Random.new():NextNumber(0, 0.5)
+        end
+    end
+    
+    game.DescendantAdded:Connect(function(v)
+         if v.ClassName == 'Part' or v.ClassName == 'MeshPart' then
+            v.Color = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+        elseif v.ClassName == 'Frame' then
+            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
+            v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+        elseif v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' then
+            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
+            v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+            v.Text = getString()
+            v.TextTransparency = Random.new():NextNumber(0, 0.5)
+        end
+    end)
+end
 
 function elements.callback(api, ...)
     local suc, res = pcall(api, ...)
@@ -98,13 +161,13 @@ end
 local window 
 if guitype == 'old' then
     window = oldgui:MakeWindow({
-        Title = 'Bloxstrap',
+        Title = getString('Bloxstrap'),
         SubTitle = ''
     })
 else
     --loadstring(game:HttpGet('https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua'))():SetLibrary(oldgui)
     window = oldgui:CreateWindow({
-        Title = 'Bloxstrap',
+        Title = getString('Bloxstrap'),
         SubTitle = '',
         TabWidth = 160,
         Size = UDim2.fromOffset(600, 450),
@@ -153,6 +216,7 @@ end
 
 
 for i,v in {'Intergrations', 'Mods', 'Engine Settings', 'Appearence', 'Behaviour'} do
+    i = getString(i)
     local tabname = v:lower():gsub(' ', '')
     local args = {
         Title = v,
@@ -236,8 +300,9 @@ if guitype == 'old' then
                 return fakeapi
             end
             function api:addtextbox(args)
-                local fakeapi = {value = ''}
+                local fakeapi = {value = args.default or ''}
                 elements.modules[args.name] = fakeapi
+                
                 local textbox = elements.actualwins[i]:AddTextBox({
                     Title = args.name,
                     Callback = function(val)
@@ -263,6 +328,17 @@ else
                 toggled = false,
                 cons = {}
             }
+            function moduleapi:addbutton(args)
+                local api = {
+                    callback = args.callback or function() end
+                }
+                elements.actualwins[i]:AddButton({
+                    Title = args.name, 
+                    Description = args.subtext,
+                    Callback = api.callback
+                })
+                return api
+            end
             function moduleapi:addtoggle(args)
                 if oldgui.Options[args.name] then
                     warn('sorted mod'.. elements.modules[args.name])
@@ -270,25 +346,39 @@ else
                     return elements.modules[args.name]
                 end
                 local api = {
-                    toggled = false, 
+                    toggled = (args.default or false), 
                     cons = {},
                     callback = args.callback or function() end
                 }
                 elements.modules[args.name] = api
-                local moduletoggle = elements.actualwins[i]:AddToggle(args.name, {
-                    Title = args.name, 
-                    Description = args.subtext 
-                })
-                function api:setstate(bool)
-                    moduletoggle:SetValue(bool or not api.toggled)
+                local moduletoggle
+                local notshow = (args.show == false and true) or nil
+                if notshow then
+                    api.toggled = true
                 end
-                moduletoggle:OnChanged(function()
+                if not notshow then 
+                    moduletoggle = elements.actualwins[i]:AddToggle(args.name, {
+                        Title = getString(args.name), 
+                        Description = args.subtext 
+                    })
+                end
+                function api:setstate(bool)
+                    bool = bool or not api.toggled
+                    if moduletoggle then
+                        moduletoggle:SetValue(bool)
+                    else
+                        task.spawn(api.callback, bool)
+                    end
+                end
+                if moduletoggle then
+                    moduletoggle:OnChanged(function()
                     api.toggled = oldgui.Options[args.name].Value
                     if not api.toggled then
                         elements:clean(api.cons)
                     end
                     task.spawn(elements.callback, api.callback, api.toggled)
-                end)
+                    end)
+                end
                 function api:retoggle()
                     if api.toggled and api.callback then
                         api:setstate(false)
@@ -296,13 +386,20 @@ else
                     end
                 end
                 if args.default then
-                    moduletoggle:SetValue(args.default)
+                    if moduletoggle then
+                        moduletoggle:SetValue(args.default)
+                    else
+                        api:setstate(args.default)
+                    end
                 end
                 return api
             end
+              
+            moduleapi.toggled = (arguments.show == false and true) or arguments.default
             
             local modtoggle = moduleapi:addtoggle({
                 name = arguments.name,
+                show = arguments.show,
                 callback = function(call: boolean)
                     moduleapi.toggled = call
                     if arguments.callback then
@@ -325,7 +422,7 @@ else
                 }
                 elements.modules[args.name] = api
                 local dropdown = elements.actualwins[i]:AddDropdown(args.name, {
-                    Title = args.name,
+                    Title = getString(args.name),
                     Values = api.array,
                     Multi = false
                 })
@@ -350,10 +447,11 @@ else
             function moduleapi:addtextbox(args)
                 local api = {}
                 elements.modules[args.name] = api
+                
                 local box = elements.actualwins[i]:AddInput(args.name, {
-                    Title = args.name,
+                    Title = getString(args.name),
                     Default = args.default,
-                    Numeric = args.number or false,
+                    Numeric = args.number,
                     Finished = true,
                     Callback = function(val)
                         api.value = val
@@ -380,6 +478,8 @@ function shared.loaded:destruct()
     shared.loaded = nil
 end
 
+local customelements = {}
+
 function elements:toggle(bool)
     bool = bool or not self.enabled
     if winframe then
@@ -387,16 +487,258 @@ function elements:toggle(bool)
     else
         self.gui.Enabled = bool
     end
+    for i,v in customelements do
+        if v and v.Parent then
+            v.Enabled = bool
+        end
+    end
     self.enabled = bool
+end
+
+function elements:addbutton(parent, pos, size)
+    size = size or UDim2.fromOffset(44, 44)
+
+    local button = Instance.new('TextButton', parent)
+    button.BorderSizePixel = 0
+    button.BackgroundTransparency = 0.3
+    button.Text = ''
+    button:GetPropertyChangedSignal('Text'):Connect(function()
+        button.Text = getString(button.Text)
+    end)
+    if not pos then
+        button.AnchorPoint = Vector2.new(1, 0.5)
+    end
+    button.BackgroundColor3 = Color3.new()
+    button.Size = size
+    button.Position = UDim2.fromScale(1, 0.5)
+    button.ZIndex = 2000
+    button.TextColor3 = Color3.new(1, 1, 1)
     
+    Instance.new('UICorner', button).CornerRadius = UDim.new(1, 0)
+    
+    local stroke = Instance.new('UIStroke', button)
+    stroke.Thickness = 2
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Color = Color3.new(1, 1, 1)
+    
+    table.insert(customelements, stroke)
+    
+    return button
 end
 
 function elements:notify(args)
-    cloneref(game:GetService('StarterGui')):SetCore('SendNotification', {
-        Title = args.Title or args.title or 'Bloxstrap',
-        Text = args.Description or args.Desc or args.subtext,
-        Duration = args.duration or args.Duration or 7
+    local title = args.Title or args.title or 'Bloxstrap'
+    local description = args.Description or args.Desc or args.desc or args.subtext
+    local duration = args.duration or args.Duration or 7
+
+    local notif = Instance.new('Frame', Frame) 
+    notif.Name = 'notif'
+    notif.BackgroundTransparency = 1
+    notif.Active = false
+    notif.BackgroundColor3 = Color3.new(1, 1, 1)
+    notif.ClipsDescendants = false
+    notif.BorderSizePixel = 0
+    notif.Size = UDim2.new(1, 0, 0, 72)
+
+    local Frame_1 = Instance.new('Frame', notif) 
+    Frame_1.BackgroundTransparency = 1
+    Frame_1.Active = false
+    Frame_1.BackgroundColor3 = Color3.new(1, 1, 1)
+    Frame_1.ClipsDescendants = false
+    Frame_1.BorderSizePixel = 0
+    Frame_1.Position = UDim2.fromScale(1.1, 0)
+    Frame_1.Size = UDim2.fromScale(1, 1)
+
+    tweenservice:Create(Frame_1, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Position = UDim2.fromScale()}):Play()
+
+    local Frame_2 = Instance.new('Frame', Frame_1) 
+    Frame_2.BackgroundTransparency = 0.9
+    Frame_2.Active = false
+    Frame_2.BackgroundColor3 = Color3.new(1, 1, 1)
+    Frame_2.ClipsDescendants = false
+    Frame_2.BorderSizePixel = 0
+    Frame_2.Size = UDim2.fromScale(1, 1)
+
+    local ImageLabel = Instance.new('ImageLabel', Frame_2) 
+    ImageLabel.ImageColor3 = Color3.new(0, 0, 0)
+    ImageLabel.ScaleType = Enum.ScaleType.Slice
+    ImageLabel.ClipsDescendants = false
+    ImageLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    ImageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    ImageLabel.Image = 'rbxassetid://8992230677'
+    ImageLabel.BackgroundTransparency = 1
+    ImageLabel.Position = UDim2.fromScale(0.5, 0.5)
+    ImageLabel.ImageTransparency = 0.7
+    ImageLabel.Active = false
+    ImageLabel.BorderSizePixel = 0
+    ImageLabel.Size = UDim2.new(1, 120, 1, 116)
+
+    Instance.new('UICorner', Frame_2)
+
+    local Background = Instance.new('Frame', Frame_2) 
+    Background.Name = 'Background'
+    Background.BackgroundTransparency = 0.9
+    Background.Active = false
+    Background.BackgroundColor3 = Color3.new(0.235294, 0.235294, 0.235294)
+    Background.ClipsDescendants = false
+    Background.BorderSizePixel = 0
+    Background.Size = UDim2.fromScale(1, 1)
+
+    Instance.new('UICorner', Background)
+
+    local Frame_3 = Instance.new('Frame', Frame_2) 
+    Frame_3.BackgroundTransparency = 0.4000000059604645
+    Frame_3.Active = false
+    Frame_3.BackgroundColor3 = Color3.new(1, 1, 1)
+    Frame_3.ClipsDescendants = false
+    Frame_3.BorderSizePixel = 0
+    Frame_3.Size = UDim2.fromScale(1, 1)
+
+    Instance.new('UICorner', Frame_3)
+
+    local UIGradient = Instance.new('UIGradient', Frame_3) 
+    UIGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.new(0.156863, 0.156863, 0.156863)),
+        ColorSequenceKeypoint.new(1, Color3.new(0.156863, 0.156863, 0.156863)),
     })
+    UIGradient.Rotation = 90
+
+    local ImageLabel_1 = Instance.new('ImageLabel', Frame_2) 
+    ImageLabel_1.ScaleType = Enum.ScaleType.Tile
+    ImageLabel_1.Active = false
+    ImageLabel_1.Image = 'rbxassetid://9968344105'
+    ImageLabel_1.BackgroundTransparency = 1
+    ImageLabel_1.BackgroundColor3 = Color3.new(1, 1, 1)
+    ImageLabel_1.ImageTransparency = 0.9800000190734863
+    ImageLabel_1.ClipsDescendants = false
+    ImageLabel_1.BorderSizePixel = 0
+    ImageLabel_1.Size = UDim2.fromScale(1, 1)
+
+    Instance.new('UICorner', ImageLabel_1)
+
+    local ImageLabel_2 = Instance.new('ImageLabel', Frame_2) 
+    ImageLabel_2.ScaleType = Enum.ScaleType.Tile
+    ImageLabel_2.Active = false
+    ImageLabel_2.Image = 'rbxassetid://9968344227'
+    ImageLabel_2.BackgroundTransparency = 1
+    ImageLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
+    ImageLabel_2.ImageTransparency = 0.8999999761581421
+    ImageLabel_2.ClipsDescendants = false
+    ImageLabel_2.BorderSizePixel = 0
+    ImageLabel_2.Size = UDim2.fromScale(1, 1)
+
+    Instance.new('UICorner', ImageLabel_2)
+
+    local Frame_4 = Instance.new('Frame', Frame_2) 
+    Frame_4.BackgroundColor3 = Color3.new(1, 1, 1)
+    Frame_4.BackgroundTransparency = 1
+    Frame_4.Active = false
+    Frame_4.ClipsDescendants = false
+    Frame_4.ZIndex = 2
+    Frame_4.BorderSizePixel = 0
+    Frame_4.Size = UDim2.fromScale(1, 1)
+
+    Instance.new('UICorner', Frame_4)
+
+    local UIStroke = Instance.new('UIStroke', Frame_4) 
+    UIStroke.Color = Color3.new(0.352941, 0.352941, 0.352941)
+    UIStroke.Transparency = 0.5
+
+    local Frame_5 = Instance.new('Frame', Frame_2) 
+    Frame_5.BackgroundTransparency = 1
+    Frame_5.Active = false
+    Frame_5.BackgroundColor3 = Color3.new(1, 1, 1)
+    Frame_5.ClipsDescendants = false
+    Frame_5.BorderSizePixel = 0
+    Frame_5.Size = UDim2.fromScale(1, 1)
+
+    local TextLabel = Instance.new('TextLabel', Frame_1) 
+    TextLabel.TextWrapped = true
+    TextLabel.TextColor3 = Color3.new(0.941176, 0.941176, 0.941176)
+    TextLabel.Text = title
+    TextLabel.ClipsDescendants = false
+    TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Font = Enum.Font.Gotham
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Position = UDim2.fromOffset(14, 17)
+    TextLabel.RichText = true
+    TextLabel.Active = false
+    TextLabel.TextSize = 13
+    TextLabel.Size = UDim2.new(1, -12, 0, 12)
+
+    local TextButton = Instance.new('TextButton', Frame_1) 
+    TextButton.TextColor3 = Color3.new(0, 0, 0)
+    TextButton.Text = ''
+    TextButton.AutoButtonColor = false
+    TextButton.AnchorPoint = Vector2.new(1, 0)
+    TextButton.Font = Enum.Font.SourceSans
+    TextButton.BackgroundTransparency = 1
+    TextButton.Position = UDim2.new(1, -14, 0, 13)
+    TextButton.BackgroundColor3 = Color3.new(1, 1, 1)
+    TextButton.ClipsDescendants = false
+    TextButton.TextSize = 14
+    TextButton.Size = UDim2.fromOffset(20, 20)
+
+    local ImageLabel_3 = Instance.new('ImageLabel', TextButton) 
+    ImageLabel_3.ImageColor3 = Color3.new(0.941176, 0.941176, 0.941176)
+    ImageLabel_3.ClipsDescendants = false
+    ImageLabel_3.AnchorPoint = Vector2.new(0.5, 0.5)
+    ImageLabel_3.Image = 'rbxassetid://9886659671'
+    ImageLabel_3.BackgroundTransparency = 1
+    ImageLabel_3.Position = UDim2.fromScale(0.5, 0.5)
+    ImageLabel_3.BackgroundColor3 = Color3.new(1, 1, 1)
+    ImageLabel_3.Active = false
+    ImageLabel_3.BorderSizePixel = 0
+    ImageLabel_3.Size = UDim2.fromOffset(16, 16)
+
+    local Frame_6 = Instance.new('Frame', Frame_1) 
+    Frame_6.BackgroundColor3 = Color3.new(1, 1, 1)
+    Frame_6.BackgroundTransparency = 1
+    Frame_6.Active = false
+    Frame_6.ClipsDescendants = false
+    Frame_6.Position = UDim2.fromOffset(14, 40)
+    Frame_6.BorderSizePixel = 0
+    Frame_6.AutomaticSize = Enum.AutomaticSize.Y
+    Frame_6.Size = UDim2.new(1, -28, 0, 0)
+
+    local UIListLayout_1 = Instance.new('UIListLayout', Frame_6) 
+    UIListLayout_1.VerticalAlignment = Enum.VerticalAlignment.Center
+    UIListLayout_1.Padding = UDim.new(0, 3)
+    UIListLayout_1.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local TextLabel_1 = Instance.new('TextLabel', Frame_6) 
+    TextLabel_1.TextWrapped = true
+    TextLabel_1.TextColor3 = Color3.new(0.941176, 0.941176, 0.941176)
+    TextLabel_1.Text = description
+    TextLabel_1.BackgroundColor3 = Color3.new(1, 1, 1)
+    TextLabel_1.Font = Enum.Font.Gotham
+    TextLabel_1.BackgroundTransparency = 1
+    TextLabel_1.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel_1.ClipsDescendants = false
+    TextLabel_1.Active = false
+    TextLabel_1.TextSize = 14
+    TextLabel_1.Size = UDim2.new(1, 0, 0, 14)
+
+    local TextLabel_2 = Instance.new('TextLabel', Frame_6) 
+    TextLabel_2.Visible = false
+    TextLabel_2.TextWrapped = true
+    TextLabel_2.TextColor3 = Color3.new(0.666667, 0.666667, 0.666667)
+    TextLabel_2.Text = ''
+    TextLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
+    TextLabel_2.Font = Enum.Font.Gotham
+    TextLabel_2.BackgroundTransparency = 1
+    TextLabel_2.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel_2.ClipsDescendants = false
+    TextLabel_2.Active = false
+    TextLabel_2.TextSize = 14
+    TextLabel_2.Size = UDim2.new(1, 0, 0, 14)
+
+    task.delay(duration, function()
+        tweenservice:Create(Frame_1, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = UDim2.fromScale(1.1, 0)}):Play()
+        task.wait(0.5)
+        notif:Destroy()
+    end)
 end
 
 return elements
