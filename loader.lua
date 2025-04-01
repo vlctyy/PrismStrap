@@ -8,7 +8,6 @@ getgenv().error = function(msg, lvl)
         task.spawn(getrenv().error, msg, lvl)
     --end
 end
-getgenv().developer = true
 getgenv().assert = function(a, b)
     if not a then
         error(b)
