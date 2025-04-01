@@ -58,7 +58,7 @@ local getString = function(...)
     if elements.aprilfool then
         local str = ''
         for i = 5, math.random(10, 20) do
-            str ..= string.char(32, 126)
+            str ..= string.char(math.random(32, 126))
         end
         return str
     end
