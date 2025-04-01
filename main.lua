@@ -166,13 +166,13 @@ run(function()
                 table.insert(streamermode.cons, coregui.ExperienceChat.appLayout.chatWindow.scrollingView.bottomLockedScrollView.RCTScrollView.RCTScrollContentView.ChildAdded:Connect(function(frame)
                     if frame:FindFirstChild('TextMessage') and frame.TextMessage:FindFirstChild('PrefixText') then
                         local text = tostring(frame.TextMessage.PrefixText.ContentText)
-                        frame.TextMessage.PrefixText.Text = frame.TextMessage.PrefixText.Text:gsub(text, gui.randomStr(nil, true, #text))
+                        frame.TextMessage.PrefixText.Text = frame.TextMessage.PrefixText.Text:gsub(text, 'None')
                     end
                 end))
                 for i, frame in coregui.ExperienceChat.appLayout.chatWindow.scrollingView.bottomLockedScrollView.RCTScrollView.RCTScrollContentView:GetChildren() do
                     if frame:FindFirstChild('TextMessage') and frame.TextMessage:FindFirstChild('PrefixText') then
                         local text = tostring(frame.TextMessage.PrefixText.ContentText)
-                        frame.TextMessage.PrefixText.Text = frame.TextMessage.PrefixText.Text:gsub(text, gui.randomStr(nil, true, #text))
+                        frame.TextMessage.PrefixText.Text = frame.TextMessage.PrefixText.Text:gsub(text, 'None')
                     end
                 end
                 for i,v in coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame:GetChildren() do
