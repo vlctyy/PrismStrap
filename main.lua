@@ -50,7 +50,7 @@ recordlabel.TextSize = 15
 recordlabel.Font = Enum.Font.Arial
 recordlabel.RichText = true
 recordlabel.TextColor3 = Color3.new(1, 1, 1)
-recordlabel.Text = 'Select macro\'s click position'
+recordlabel.Text = 'Select macro\'s toggle position'
 
 local getcustomasset = function(path: string)
     if not isfile(path) then
@@ -164,22 +164,32 @@ run(function()
         callback = function(call)
             if call then
                 table.insert(streamermode.cons, coregui.ExperienceChat.appLayout.chatWindow.scrollingView.bottomLockedScrollView.RCTScrollView.RCTScrollContentView.ChildAdded:Connect(function(frame)
-                    if frame:FindFirstChild('TextMessage') then
-                        local text = #tostring(frame.TextMessage.PrefixText)
-                        frame.TextMessage.PrefixText = tostring(math.random(2, text))
+                    if frame:FindFirstChild('TextMessage') and frame.TextMessage:FindFirstChild('PrefixText') then
+                        local text = tostring(frame.TextMessage.PrefixText.ContentText)
+                        frame.TextMessage.PrefixText.Text = frame.TextMessage.PrefixText.Text:gsub(text, gui.randomStr(nil, true, #text))
                     end
                 end))
                 for i, frame in coregui.ExperienceChat.appLayout.chatWindow.scrollingView.bottomLockedScrollView.RCTScrollView.RCTScrollContentView:GetChildren() do
-                    if frame:FindFirstChild('TextMessage') then
-                        local text = #tostring(frame.TextMessage.PrefixText)
-                        frame.TextMessage.PrefixText = tostring(math.random(2, text))
+                    if frame:FindFirstChild('TextMessage') and frame.TextMessage:FindFirstChild('PrefixText') then
+                        local text = tostring(frame.TextMessage.PrefixText.ContentText)
+                        frame.TextMessage.PrefixText.Text = frame.TextMessage.PrefixText.Text:gsub(text, gui.randomStr(nil, true, #text))
                     end
                 end
-                table.insert(coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame.ChildAdded:Connect(function(v)
-                    v.Visible = false
-                end))
                 for i,v in coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame:GetChildren() do
-                    v.Visible = false
+                    if v.Name:sub(1, 2) == 'p_' then
+                        v.Visible = false
+                    end
+                end
+                coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame.ChildAdded:Connect(function(v)
+                    if v.Name:sub(1, 2) == 'p_' then
+                        v.Visible = false
+                    end
+                end)
+            else 
+                for i,v in coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame:GetChildren() do
+                    if v.Name:sub(1, 2) == 'p_' then
+                        v.Visible = true
+                    end
                 end
             end
         end
@@ -204,16 +214,43 @@ run(function()
         togglebutton.TextWrapped = true
         togglebutton.MouseButton1Click:Connect(function()
             toggled = not toggled
-            togglebutton.BackgroundColor3 = toggled and Color3.fromRGB(0, 255, 0) or Color3.new()
-            if toggled then
-                repeat
-                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
-                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
-                    task.wait(1 / (macrocps.value or 7))
-                until not toggled or not togglebutton.Parent
+            if macromode.value == 'Toggle' then
+                togglebutton.BackgroundColor3 = toggled and Color3.fromRGB(0, 255, 0) or Color3.new()
+                if toggled then
+                    repeat
+                        virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
+                        virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                        task.wait(1 / (macrocps.value or 7))
+                    until not toggled or not togglebutton.Parent or macromode.value ~= 'Toggle'
+                end
+            elseif macromode.value == 'No Repeat' then
+                togglebutton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
+                virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                togglebutton.BackgroundColor3 = Color3.new()
             end
         end)
+        local mouseenter = false
+        togglebutton.MouseEnter:Connect(function()
+            mouseenter = true
+        end)
+        togglebutton.MouseLeave:Connect(function()
+            mouseenter = false
+        end)
         
+        task.spawn(function()
+            repeat
+                if mouseenter and macromode.value == 'Repeat While Holding' then
+                    togglebutton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
+                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                else
+                    togglebutton.BackgroundColor3 = Color3.new()
+                end
+                task.wait(1 / (macrocps.value or 7))
+            until not togglebutton.Parent
+        end)
+
         gui:setdraggable(togglebutton, gui.gui.Enabled)
         
         table.insert(macroapis, {
@@ -265,7 +302,7 @@ run(function()
     })
     macromode = macro:adddropdown({
         name = 'Macro Mode',
-        list = {'Input'},
+        list = {'No Repeat', 'Repeat While Holding', 'Toggle'},
         default = 1
     })
   
@@ -386,8 +423,7 @@ run(function()
         show = false,
         icon = getcustomasset('bloxstrap/images/fontico.png'),
         callback = function(call)
-            if call and font.value ~= 'None' then
-                if not font then return end
+            if call and font and font.value ~= 'None' then
                 local val = `bloxstrap/fonts/{font.value}`
                 writefile(val:gsub('.ttf', '.json'):gsub('.otf', '.json'), httpservice:JSONEncode({
                     name = 'fontface',
@@ -482,7 +518,7 @@ run(function()
             if call and lightingmode:find('Phase') then
                 lightingmode = lightingmode:split('(')[1]
             end
-            sethiddenproperty(lighting, 'Technology', (lightingmode == 'Chosen by game' or not call) and 'Future' or lightingmode)
+            sethiddenproperty(lighting, 'Technology', (technology.value == 'Chosen by game' or not call) and 'Future' or lightingmode)
             if not call then
                 return
             end
@@ -854,8 +890,8 @@ run(function()
     })
 end)
 
+local fastflageditor = nil
 run(function()
-    local fastflageditor = nil
     local fastflags = nil
     local oldfastflagsvalues = {}
     fastflageditor = gui.windows.enginesettings:addmodule({
@@ -868,6 +904,7 @@ run(function()
     })
     fastflags = fastflageditor:addtextbox({
         name = 'FastFlags',
+        ignore = true,
         callback = function(a, b)
             if b then
                 local suc, oldfflag = pcall(function()
@@ -883,9 +920,18 @@ run(function()
                     setfflag(i,v)
                     fastflageditor:addtextbox({
                         name = tostring(i),
+                        ignore = true,
                         default = tostring(v),
                         callback = function(val, lost)
-                            if lost then
+                            if val and lost then
+                                local suc, oldfflag = pcall(function()
+                                    return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
+                                end)
+                                if not suc then
+                                    oldfflag = {}
+                                end
+                                oldfflag[i] = val
+                                writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
                                 setfflag(i, val)
                             end
                         end
@@ -894,10 +940,34 @@ run(function()
                 writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
                 if not getgenv().noshow then
                     gui:notify({
-                        desc = 'Loaded fflags'
+                        desc = 'Successfully entered fastflags.'
                     })
                 end
             end
+        end
+    })
+    fastflageditor:addbutton({
+        name = 'Reset Fastflags',
+        callback = function()
+            gui.win:Dialog({
+                Title = 'FastFlags Editor',
+                Content = 'Are you sure you want to reset ur fastflags\n(this will restart ur roblox).',
+                Buttons = {
+                    {
+                        Title = 'Confirm',
+                        Callback = function()
+                            writefile('bloxstrap/logs/fastflags.json', '{}')
+                            task.delay(1, function()
+                                game:Shutdown()
+                            end)
+                        end
+                    },
+                    {
+                        Title = 'Cancel',
+                        Callback = function() end
+                    }
+                }
+            })
         end
     })
 end)
@@ -966,6 +1036,24 @@ run(function()
     for i,v in httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json')) do
         setfflag(i, v)
         fastflags += 1
+        fastflageditor:addtextbox({
+            name = tostring(i),
+            default = tostring(v),
+            ignore = true,
+            callback = function(val, lost)
+                if val and lost then
+                    local suc, oldfflag = pcall(function()
+                        return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
+                    end)
+                    if not suc then
+                        oldfflag = {}
+                    end
+                    oldfflag[i] = val
+                    writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
+                    setfflag(i, val)
+                end
+            end
+        })
     end
     if not getgenv().noshow then
         gui:notify({
@@ -977,16 +1065,6 @@ run(function()
 end)
 
 run(function()
-    if not getgenv().noshow then
-        gui:notify({
-            Title = 'Bloxstrap',
-            Description = `{inputservice.KeyboardEnabled and 'Press RShift to open the ui' or 'Press the button at the middle right to open the ui'}.`,
-            Duration = 10
-        })
-    end   
-end)
-
-run(function()
     if coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame:FindFirstChild('p_7670822523') then
         coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame.p_7670822523.ChildrenFrame.NameFrame.BGFrame.OverlayFrame.PlayerIcon.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
     end
@@ -994,4 +1072,9 @@ end)
 
 task.delay(3, function() 
     gui.configlib:loadconfig(gui) 
+    gui:notify({
+        Title = 'Bloxstrap',
+        Description = `{inputservice.KeyboardEnabled and 'Press The RShift Key to open & close the ui' or 'Press the button at the middle right to open & close the ui'}.`,
+        Duration = 10
+    })
 end)

@@ -1,13 +1,14 @@
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
 end or cloneref :: (any)
---getgenv().developer = true
+getgenv().developer = true
 getgenv().error = function(msg, lvl)
     appendfile('bloxstrap/logs/error.txt', `{msg}\n`)
-    --if getgenv().developer then
+    if getgenv().developer then
         task.spawn(getrenv().error, msg, lvl)
-    --end
+    end
 end
+getgenv().developer = true
 getgenv().assert = function(a, b)
     if not a then
         error(b)
@@ -31,9 +32,12 @@ end
 if not isfile('bloxstrap/logs/profile.json') then
     writefile('bloxstrap/logs/profile.json', '{}')
 end
---if not isfile('bloxstrap/selected.txt') then
+if not isfile('bloxstrap/selected.txt') then
     writefile('bloxstrap/selected.txt', 'fluent')
---end
+end
+if not isfolder('bloxstrap/logs/cache') then
+    makefolder('bloxstrap/logs/cache')
+end
 assert(setfflag, `Your executor ({identifyexecutor()}) doesn't have the required functions for this to work.`)
 writefile('bloxstrap/logs/error.txt', '')
 return loadfile('bloxstrap/main.lua')()

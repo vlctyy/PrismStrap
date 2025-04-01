@@ -46,24 +46,31 @@ local elements = {
     configlib = loadfile('bloxstrap/core/config.lua')(),
     gui = nil,
     scale = 1,
-    aprilfool = os.date('%m%d') == '0401'
+    aprilfool = false--os.date('%m%d') == '0401'
 } :: table
+
+elements.randomStr = function(...)
+    local lol = {...}
+    if elements.aprilfool or lol[2] then
+        if lol[2] then
+            local str = ''
+            for i = 1, lol[3] do
+                str ..= string.char(math.random(32, 126))
+            end
+            return str
+        else
+            return string.reverse(lol[1])
+        end
+    end
+    return ...
+end
 
 local guitype = readfile('bloxstrap/selected.txt')
 local oldgui = loadfile(`bloxstrap/core/guis/{guitype}.lua`)()
 elements.gui = oldgui.GUI
 elements.gui.IgnoreGuiInset = true
 
-local getString = function(...)
-    if elements.aprilfool then
-        local str = ''
-        for i = 5, math.random(10, 20) do
-            str ..= string.char(math.random(32, 126))
-        end
-        return str
-    end
-    return ...
-end
+local getString = elements.randomStr
 
 local ScreenGui = Instance.new('ScreenGui', gethui and gethui() or cloneref(game:GetService('CoreGui'))) 
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -89,13 +96,14 @@ if elements.aprilfool then
         if v.ClassName == 'Part' or v.ClassName == 'MeshPart' then
             v.Color = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
         elseif v.ClassName == 'Frame' then
-            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
             v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
-        elseif v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' then
-            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
+        elseif v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' or v.ClassName == 'TextBox' then
             v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
-            v.Text = getString()
-            v.TextTransparency = Random.new():NextNumber(0, 0.5)
+            v.TextColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+            v:GetPropertyChangedSignal('Text'):Connect(function()
+                v.Text = v.Text:gsub(v.ContentText, string.reverse(v.ContentText))
+            end)
+            v.Text = v.Text:gsub(v.ContentText, string.reverse(v.ContentText))
         end
     end
     
@@ -103,13 +111,14 @@ if elements.aprilfool then
          if v.ClassName == 'Part' or v.ClassName == 'MeshPart' then
             v.Color = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
         elseif v.ClassName == 'Frame' then
-            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
             v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
-        elseif v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' then
-            v.BackgroundTransparency = Random.new():NextNumber(0.95, 1)
+        elseif v.ClassName == 'TextLabel' or v.ClassName == 'TextButton' or v.ClassName == 'TextBox' then
             v.BackgroundColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
-            v.Text = getString()
-            v.TextTransparency = Random.new():NextNumber(0, 0.5)
+            v.TextColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+            v:GetPropertyChangedSignal('Text'):Connect(function()
+                v.Text = v.Text:gsub(v.ContentText, string.reverse(v.ContentText))
+            end)
+            v.Text = v.Text:gsub(v.ContentText, string.reverse(v.ContentText))
         end
     end)
 end
@@ -180,6 +189,12 @@ else
 end
 local winframe
 if guitype == 'fluent' then
+    for i,v in oldgui.GUI:GetChildren() do
+        if v:FindFirstChild('UIListLayout') then
+            v.Visible = false
+            break
+        end
+    end
     table.foreach(oldgui.GUI:GetChildren(), function(a,b)
         if b:GetChildren()[1].Name ~= 'UIListLayout' then
             winframe = b
@@ -216,10 +231,9 @@ end
 
 
 for i,v in {'Intergrations', 'Mods', 'Engine Settings', 'Appearence', 'Behaviour'} do
-    i = getString(i)
     local tabname = v:lower():gsub(' ', '')
     local args = {
-        Title = v,
+        Title = getString(v),
         Icon = elements.assets[v:lower()]
     }
     elements.actualwins[tabname] = guitype == 'old' and window:MakeTab(args) or window:AddTab(args)
@@ -333,7 +347,7 @@ else
                     callback = args.callback or function() end
                 }
                 elements.actualwins[i]:AddButton({
-                    Title = args.name, 
+                    Title = getString(args.name), 
                     Description = args.subtext,
                     Callback = api.callback
                 })
@@ -348,7 +362,8 @@ else
                 local api = {
                     toggled = (args.default or false), 
                     cons = {},
-                    callback = args.callback or function() end
+                    callback = args.callback or function() end,
+                    ignore = args.ignore
                 }
                 elements.modules[args.name] = api
                 local moduletoggle
@@ -372,11 +387,11 @@ else
                 end
                 if moduletoggle then
                     moduletoggle:OnChanged(function()
-                    api.toggled = oldgui.Options[args.name].Value
-                    if not api.toggled then
-                        elements:clean(api.cons)
-                    end
-                    task.spawn(elements.callback, api.callback, api.toggled)
+                        api.toggled = oldgui.Options[args.name].Value
+                        if not api.toggled then
+                            elements:clean(api.cons)
+                        end
+                        task.spawn(elements.callback, api.callback, api.toggled)
                     end)
                 end
                 function api:retoggle()
@@ -418,7 +433,8 @@ else
             function moduleapi:adddropdown(args)
                 local api = {
                     array = args.list or {},
-                    value = args.default or args.list[1]
+                    value = args.default or args.list[1],
+                    ignore = args.ignore
                 }
                 elements.modules[args.name] = api
                 local dropdown = elements.actualwins[i]:AddDropdown(args.name, {
@@ -445,7 +461,10 @@ else
             end
 
             function moduleapi:addtextbox(args)
-                local api = {}
+                local api = {
+                    ignore = args.ignore,
+                    value = args.default or ''
+                }
                 elements.modules[args.name] = api
                 
                 local box = elements.actualwins[i]:AddInput(args.name, {
@@ -531,6 +550,9 @@ function elements:notify(args)
     local description = args.Description or args.Desc or args.desc or args.subtext
     local duration = args.duration or args.Duration or 7
 
+    title = getString(title)
+    description = getString(description)
+
     local notif = Instance.new('Frame', Frame) 
     notif.Name = 'notif'
     notif.BackgroundTransparency = 1
@@ -549,7 +571,7 @@ function elements:notify(args)
     Frame_1.Position = UDim2.fromScale(1.1, 0)
     Frame_1.Size = UDim2.fromScale(1, 1)
 
-    tweenservice:Create(Frame_1, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Position = UDim2.fromScale()}):Play()
+    tweenservice:Create(Frame_1, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Position = UDim2.fromScale()}):Play()
 
     local Frame_2 = Instance.new('Frame', Frame_1) 
     Frame_2.BackgroundTransparency = 0.9
@@ -577,9 +599,9 @@ function elements:notify(args)
 
     local Background = Instance.new('Frame', Frame_2) 
     Background.Name = 'Background'
-    Background.BackgroundTransparency = 0.9
+    Background.BackgroundTransparency = 0.3
     Background.Active = false
-    Background.BackgroundColor3 = Color3.new(0.235294, 0.235294, 0.235294)
+    Background.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     Background.ClipsDescendants = false
     Background.BorderSizePixel = 0
     Background.Size = UDim2.fromScale(1, 1)
@@ -609,7 +631,8 @@ function elements:notify(args)
     ImageLabel_1.Image = 'rbxassetid://9968344105'
     ImageLabel_1.BackgroundTransparency = 1
     ImageLabel_1.BackgroundColor3 = Color3.new(1, 1, 1)
-    ImageLabel_1.ImageTransparency = 0.9800000190734863
+    ImageLabel_1.ImageTransparency = 0.98
+    ImageLabel_1.TileSize = UDim2.new(0, 128, 0, 128);
     ImageLabel_1.ClipsDescendants = false
     ImageLabel_1.BorderSizePixel = 0
     ImageLabel_1.Size = UDim2.fromScale(1, 1)
@@ -620,6 +643,7 @@ function elements:notify(args)
     ImageLabel_2.ScaleType = Enum.ScaleType.Tile
     ImageLabel_2.Active = false
     ImageLabel_2.Image = 'rbxassetid://9968344227'
+    ImageLabel_2.TileSize = UDim2.new(0, 128, 0, 128);
     ImageLabel_2.BackgroundTransparency = 1
     ImageLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
     ImageLabel_2.ImageTransparency = 0.8999999761581421
@@ -679,10 +703,16 @@ function elements:notify(args)
     TextButton.ClipsDescendants = false
     TextButton.TextSize = 14
     TextButton.Size = UDim2.fromOffset(20, 20)
+    TextButton.MouseButton1Click:Connect(function()
+        tweenservice:Create(Frame_1, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = UDim2.fromScale(1.1, 0)}):Play()
+        task.wait(0.2)
+        notif:Destroy()
+    end)
 
     local ImageLabel_3 = Instance.new('ImageLabel', TextButton) 
     ImageLabel_3.ImageColor3 = Color3.new(0.941176, 0.941176, 0.941176)
     ImageLabel_3.ClipsDescendants = false
+    ImageLabel_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
     ImageLabel_3.AnchorPoint = Vector2.new(0.5, 0.5)
     ImageLabel_3.Image = 'rbxassetid://9886659671'
     ImageLabel_3.BackgroundTransparency = 1
@@ -717,9 +747,10 @@ function elements:notify(args)
     TextLabel_1.TextXAlignment = Enum.TextXAlignment.Left
     TextLabel_1.ClipsDescendants = false
     TextLabel_1.Active = false
+    TextLabel_1.AutomaticSize = Enum.AutomaticSize.Y
     TextLabel_1.TextSize = 14
     TextLabel_1.Size = UDim2.new(1, 0, 0, 14)
-
+    
     local TextLabel_2 = Instance.new('TextLabel', Frame_6) 
     TextLabel_2.Visible = false
     TextLabel_2.TextWrapped = true
@@ -735,9 +766,13 @@ function elements:notify(args)
     TextLabel_2.Size = UDim2.new(1, 0, 0, 14)
 
     task.delay(duration, function()
-        tweenservice:Create(Frame_1, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = UDim2.fromScale(1.1, 0)}):Play()
-        task.wait(0.5)
-        notif:Destroy()
+        if notif.Parent then
+            tweenservice:Create(Frame_1, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = UDim2.fromScale(1.1, 0)}):Play()
+            task.wait(0.5)
+            if notif.Parent then
+                notif:Destroy()
+            end
+        end
     end)
 end
 

@@ -1,5 +1,5 @@
 local configapi = setmetatable({
-    updateTick = tick()
+    updateTick = 0
 }, {}):: table
 local httpservice = cloneref(game:GetService('HttpService')) :: HttpService
 function configapi:getdata(args, json)
@@ -18,7 +18,7 @@ end
 function configapi:loadconfig(lib)
     for i: string, v: table in lib.modules do
         local module = lib.configs[i]
-        if module and not module.exception then
+        if module and not module.ignore then
             if module.toggled == true then
                 v:setstate(module.toggled)
             elseif module.value ~= nil then
@@ -29,7 +29,7 @@ function configapi:loadconfig(lib)
     task.spawn(function()
         task.wait(4)
         repeat
-            if configapi.updateTick <= tick() then
+            if tick() > configapi.updateTick then
                 writefile('bloxstrap/logs/profile.json', httpservice:JSONEncode(lib.modules))
                 configapi.updateTick = tick() + 5
             end
