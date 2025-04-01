@@ -16,17 +16,19 @@ function configapi:getdata(args, json)
     return body
 end
 function configapi:loadconfig(lib)
-    for i: string, v: table in lib.modules do
-        local module = lib.configs[i]
-        if module and not module.ignore then
-            if module.toggled == true then
-                print('state set for '.. module.name)
-                v:setstate(true)
-            elseif module.value ~= nil then
-                v:setvalue(module.value)
+    xpcall(function()
+        for i: string, v: table in lib.modules do
+            local module = lib.configs[i]
+            if module and not module.ignore then
+                if module.toggled == true then
+                    print('state set for '.. module.name)
+                    v:setstate(true)
+                elseif module.value ~= nil then
+                    v:setvalue(module.value)
+                end
             end
         end
-    end
+    end, warn)
     task.spawn(function()
         task.wait(4)
         repeat

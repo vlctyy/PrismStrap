@@ -36,7 +36,7 @@ local elements = {
         behaviour = 'rbxassetid://137701271745658',
         exit = 'rbxassetid://98193757882443'
     },
-    configs = isfile('bloxstrap/logs/profile.json') and httpservice:JSONDecode(readfile('bloxstrap/logs/profile.json')) or {},
+    configs = isfile('bloxstrap/logs/profile.json') and table.clone(httpservice:JSONDecode(readfile('bloxstrap/logs/profile.json'))) or {},
     tweenspeed = 0.2,
     saving = false,
     drags = {},
