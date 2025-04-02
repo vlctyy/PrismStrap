@@ -1,0 +1,8 @@
+"DFFlagDebugRenderForceFutureIsBrightPhase2" is not a valid fastflag
+"DFFlagDebugRenderForceFutureIsBrightPhase3" is not a valid fastflag
+"DFFlagDebugRenderForceFutureIsBrightPhase2" is not a valid fastflag
+"DFFlagDebugRenderForceFutureIsBrightPhase3" is not a valid fastflag
+"DFFlagDebugRenderForceFutureIsBrightPhase2" is not a valid fastflag
+"DFFlagDebugRenderForceFutureIsBrightPhase3" is not a valid fastflag
+"DFFlagDebugRenderForceFutureIsBrightPhase2" is not a valid fastflag
+"DFFlagDebugRenderForceFutureIsBrightPhase3" is not a valid fastflag
