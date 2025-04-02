@@ -17,6 +17,7 @@ function configapi:getdata(args, json)
 end
 function configapi:loadconfig(lib)
     xpcall(function()
+        print('debug a')
         for i: string, v: table in lib.modules do
             local module = lib.configs[i]
             if module and not module.ignore then
@@ -28,6 +29,7 @@ function configapi:loadconfig(lib)
                 end
             end
         end
+        print('debug b')
     end, warn)
     task.spawn(function()
         task.wait(4)
