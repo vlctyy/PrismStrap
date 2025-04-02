@@ -22,7 +22,6 @@ function configapi:loadconfig(lib)
             local module = lib.configs[i]
             if module and not module.ignore then
                 if module.toggled == true then
-                    print('state set for '.. module.name)
                     v:setstate(true)
                 elseif module.value ~= nil then
                     v:setvalue(module.value)
