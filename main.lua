@@ -131,7 +131,7 @@ run(function()
                             local sound = Instance.new('Sound', workspace)
                             sound.PlayOnRemove = true
                             sound.Volume = 0.6
-                            sound.SoundId = getcustomasset(`bloxstrap/audios/{sounds.value}`)
+                            sound.SoundId = getgenv().getcustomasset(`bloxstrap/audios/{sounds.value}`)
                             sound:Remove()
                         end
                     end))
@@ -266,9 +266,9 @@ run(function()
     macro:addbutton({
         name = 'Add Macro',
         callback = function()
-            if macroname.value == nil then 
+            if macroname.value == nil or macroname.value == '' then 
                 gui:notify({
-                    desc = 'Please make a macro name first.'
+                    desc = 'Please enter a macro name first.'
                 })
                 return 
             end
@@ -295,13 +295,13 @@ run(function()
     macrocps = macro:addtextbox({
         name = 'CPS (Clicks per second)',
         number = true,
-        default = 7
+        default = 50
     })
     macroname = macro:addtextbox({
         name = 'Macro Name',
     })
     macromode = macro:adddropdown({
-        name = 'Macro Mode',
+        name = 'Macro Types',
         list = {'No Repeat', 'Repeat While Holding', 'Toggle'},
         default = 1
     })
@@ -345,7 +345,7 @@ run(function()
                 imagelabel.AnchorPoint = Vector2.new(0.5, 0.5)
                 imagelabel.Position = UDim2.new(0.5, 0, 0.5, 0)
                 imagelabel.BackgroundTransparency = 1
-                imagelabel.Image = getcustomasset('bloxstrap/images/'..crosshairimage.value) or ''
+                imagelabel.Image = getgenv().getcustomasset('bloxstrap/images/'..crosshairimage.value) or ''
                 Instance.new('UIScale', imagelabel).Scale = gui.scale
                 table.insert(crosshair.cons, imagelabel)
             end
@@ -436,7 +436,7 @@ run(function()
                         }
                     }
                 }))
-                local fontface = Font.new(getcustomasset(val:gsub('.ttf', '.json'):gsub('.otf', '.json')), Enum.FontWeight.Regular)
+                local fontface = Font.new(getgenv().getcustomasset(val:gsub('.ttf', '.json'):gsub('.otf', '.json')), Enum.FontWeight.Regular)
                 for i: number, v: any in game:GetDescendants() do
                     if ({pcall(function() return v.Font end)})[1] then
                         table.insert(originalfonts, {Font = v.Font, UI = v})
@@ -973,48 +973,50 @@ run(function()
 end)
 
 run(function()
-    local button = bloxstrapbutton
+    if not inputservice.KeyboardEnabled then
+        local button = bloxstrapbutton
 
-    local imagelabel = Instance.new('ImageLabel', button) :: ImageLabel
-    imagelabel.Size = UDim2.new(0, 22, 0, 22)
-    imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
-    imagelabel.BackgroundTransparency = 1
-    imagelabel.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
-    imagelabel.ImageColor3 = Color3.new(1, 1, 1)
-    imagelabel.ZIndex = 2000
-
-    gui.button = button
-
-    button.MouseButton1Click:Connect(function()
-        gui:toggle()
-    end)
-
-    local buttontransparency = nil
-    local buttonvisibility = nil
-    local buttondraggable = nil
-    local legitmode = gui.windows.behaviour:addmodule({
-        name = 'Legit Mode',
-        show = false,
-        callback = function(call)
-            if call then
-                if tonumber(buttontransparency.value) then
-                    button.BackgroundTransparency = buttontransparency.value
-                    imagelabel.ImageTransparency = buttontransparency.value
+        local imagelabel = Instance.new('ImageLabel', button) :: ImageLabel
+        imagelabel.Size = UDim2.new(0, 22, 0, 22)
+        imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
+        imagelabel.BackgroundTransparency = 1
+        imagelabel.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
+        imagelabel.ImageColor3 = Color3.new(1, 1, 1)
+        imagelabel.ZIndex = 2000
+    
+        gui.button = button
+    
+        button.MouseButton1Click:Connect(function()
+            gui:toggle()
+        end)
+    
+        local buttontransparency = nil
+        local buttonvisibility = nil
+        local buttondraggable = nil
+        local legitmode = gui.windows.behaviour:addmodule({
+            name = 'Legit Mode',
+            show = false,
+            callback = function(call)
+                if call then
+                    if tonumber(buttontransparency.value) then
+                        button.BackgroundTransparency = buttontransparency.value
+                        imagelabel.ImageTransparency = buttontransparency.value
+                    end
                 end
             end
-        end
-    })
-    buttontransparency = legitmode:addtextbox({
-        name = 'Transparency',
-        number = true,
-        default = inputservice.TouchEnabled and 0 or 1,
-        callback = function(val)
-            if legitmode.toggled then
-                button.BackgroundTransparency = val
-                imagelabel.ImageTransparency = val
+        })
+        buttontransparency = legitmode:addtextbox({
+            name = 'Transparency',
+            number = true,
+            default = inputservice.TouchEnabled and 0 or 1,
+            callback = function(val)
+                if legitmode.toggled then
+                    button.BackgroundTransparency = val
+                    imagelabel.ImageTransparency = val
+                end
             end
-        end
-    })
+        })
+    end
     gui.windows.appearence:addmodule({
         name = 'GUI Appearence',
         default = true,
