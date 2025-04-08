@@ -14,9 +14,14 @@ local inputservice = cloneref(game:FindService('UserInputService')) :: UserInput
 local lplr = players.LocalPlayer :: Player
 local request = identifyexecutor() == 'Delta' and http.request or syn and syn.request or request
 
+local pcdebug = true
+
 local loadfile = function(file, errpath)
     if getgenv().developer then
         errpath = errpath or file:gsub('bloxstrap/', '')
+        if not isfile(file) then
+            error(`{file} not found in the workspace`)
+        end
         return getgenv().loadfile(file, errpath)
     else
         local result = request({
@@ -32,25 +37,38 @@ local loadfile = function(file, errpath)
     end
 end
 
-local realgui = Instance.new('ScreenGui', gethui())
-  
-local macroui = Instance.new('Frame', realgui)
-macroui.BackgroundTransparency = 1
-macroui.Size = UDim2.fromScale(1, 1)
-macroui.Visible = false
-macroui.AnchorPoint = Vector2.new(0.5, 0.5)
-macroui.Position = UDim2.fromScale(0.5, 0.5)
+if hookfunction then
+    local old = nil
+    old = hookfunction(listfiles, function(file)
+        if identifyexecutor() ~= 'Swift' then
+            return old(file)
+        end
+        local data = old(file)
+        for i,v in data do
+            data[i] = v:gsub('\\', '/')
+        end
+        return data
+    end)
+end
 
-local recordlabel = Instance.new('TextLabel', macroui)
-recordlabel.Size = UDim2.fromOffset(50, 50)
-recordlabel.AnchorPoint = Vector2.new(0.5, 0.1)
-recordlabel.Position = UDim2.fromScale(0.5, 0.1)
-recordlabel.BackgroundTransparency = 1
-recordlabel.TextSize = 15
-recordlabel.Font = Enum.Font.Arial
-recordlabel.RichText = true
-recordlabel.TextColor3 = Color3.new(1, 1, 1)
-recordlabel.Text = 'Select macro\'s toggle position'
+local gethui = gethui or function()
+    return coregui.RobloxGui
+end
+    
+local realgui = Instance.new('ScreenGui', gethui())
+realgui.IgnoreGuiInset = true
+
+local macrolab = Instance.new('TextLabel', realgui)
+macrolab.BackgroundTransparency = 1
+macrolab.Text = 'Choose ur macro toggle position.'
+macrolab.TextColor3 = Color3.new(1, 1, 1)
+macrolab.ZIndex = 300
+macrolab.Visible = false
+macrolab.TextScaled = true
+macrolab.AnchorPoint = Vector2.new(0.5, 0.05)
+macrolab.Position = UDim2.fromScale(0.5, 0.05)
+macrolab.Size = UDim2.fromOffset(200, 40)
+macrolab.Font = Enum.Font.GothamMedium
 
 local getcustomasset = function(path: string)
     if not isfile(path) then
@@ -61,8 +79,8 @@ end
 
 print(getcustomasset('bloxstrap/images/bloxstrap.png')) --> auto installs image
 
-local getfflag = loadfile('bloxstrap/core/getfflag.lua')()
-local setfflag = loadfile('bloxstrap/core/setfflag.lua')()
+local getfflag = loadfile('bloxstrap/libraries/getfflag.lua')()
+local setfflag = loadfile('bloxstrap/libraries/setfflag.lua')()
 local gui = loadfile(`bloxstrap/core/hook.lua`)() :: table
 
 local run = function(func: (() -> ()))
@@ -81,7 +99,13 @@ local displaymessage = function(msg, color, font)
     end
 end
 
-local bloxstrapbutton = gui:addbutton(realgui)
+local bloxstrapbutton = gui:addbutton(realgui, nil, nil, 'bloxstrapbutton')
+bloxstrapbutton.Visible = pcdebug or not inputservice.KeyboardEnabled
+bloxstrapbutton:GetPropertyChangedSignal('Visible'):Connect(function()
+    if bloxstrapbutton.Visible and inputservice.KeyboardEnabled and not pcdebug then
+        bloxstrapbutton.Visible = false
+    end
+end)
 
 --> inter
 run(function()
@@ -202,10 +226,138 @@ run(function()
     local macroshowpos = nil
     local macroname = nil
     local macrocps = nil
+
+    local settingms = false
+
+    local macroelements = {
+        background = Instance.new('Frame', realgui)
+    }
+
+    macroelements.background.AnchorPoint = Vector2.new(0.5, 0.5)
+    macroelements.background.BackgroundColor3 = Color3.new()
+    macroelements.background.Position = UDim2.fromScale(0.5, 0.5)
+    macroelements.background.Size = UDim2.fromScale(1, 1)
+    macroelements.background.BackgroundTransparency = 0.5
+    macroelements.background.Visible = false
+
+    macroelements.stopframe = Instance.new('Frame', macroelements.background);
+    macroelements.stopframe.AnchorPoint = Vector2.new(0.99000001, 0.5);
+    macroelements.stopframe.Name = 'stopframe';
+    macroelements.stopframe.Position = UDim2.new(0.99000001, 0, 0.5, 0);
+    macroelements.stopframe.BorderColor3 = Color3.fromRGB(0, 0, 0);
+    macroelements.stopframe.Size = UDim2.new(0, 50, 0, 50);
+    macroelements.stopframe.BorderSizePixel = 0;
+    macroelements.stopframe.BackgroundColor3 = Color3.fromRGB(35, 35, 35);
+
+
+    local greenframe: TextLabel = Instance.new('Frame', macroelements.stopframe);
+    greenframe.BorderColor3 = Color3.fromRGB(0, 0, 0);
+    greenframe.AnchorPoint = Vector2.new(0.5, 0.5);
+    greenframe.Name = 'greenframe';
+    greenframe.Position = UDim2.new(0.5, 0, 0.5, 0);
+    greenframe.Size = UDim2.new(0, 20, 0, 20);
+    greenframe.BorderSizePixel = 0;
+    greenframe.BackgroundColor3 = Color3.fromRGB(209, 0, 3);
+
+
+    local UIStroke: UIStroke = Instance.new('UIStroke', greenframe);
+    UIStroke.Thickness = 2;
+    UIStroke.LineJoinMode = Enum.LineJoinMode.Miter;
+    UIStroke.Color = Color3.fromRGB(255, 255, 255);
+    UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
+
+
+    local stopbutton: TextButton = Instance.new('TextButton', macroelements.stopframe);
+    stopbutton.FontFace = Font.new('rbxasset://fonts/families/SourceSansPro.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+    stopbutton.TextColor3 = Color3.fromRGB(0, 0, 0);
+    stopbutton.BorderColor3 = Color3.fromRGB(0, 0, 0);
+    stopbutton.Text = '';
+    stopbutton.Name = 'stopbutton';
+    stopbutton.BackgroundTransparency = 1;
+    stopbutton.BorderSizePixel = 0;
+    stopbutton.Size = UDim2.new(0, 50, 0, 50);
+    stopbutton.ZIndex = 1000;
+    stopbutton.TextSize = 14;
+    stopbutton.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
+    stopbutton.MouseButton1Click:Connect(function()
+        settingms = false
+        macroelements.background.Visible = false
+        macrolab.Visible = true
+    end)
+
+    local label: TextLabel = Instance.new('TextLabel', macroelements.stopframe);
+    label.TextWrapped = true;
+    label.TextColor3 = Color3.fromRGB(255, 255, 255);
+    label.BorderColor3 = Color3.fromRGB(0, 0, 0);
+    label.Text = 'Stop Recording';
+    label.Name = 'label';
+    label.Size = UDim2.new(0, 200, 0, 17);
+    label.Position = UDim2.new(-4.28000021, 0, 0.3, 0);
+    label.BorderSizePixel = 0;
+    label.BackgroundTransparency = 1;
+    label.TextXAlignment = Enum.TextXAlignment.Right;
+    label.TextSize = 14;
+    label.FontFace = Font.new('rbxasset://fonts/families/GothamSSm.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+    label.TextScaled = true;
+    label.BackgroundColor3 = Color3.fromRGB(255, 255, 255);
     
     local macroapis = {}
+
+    local macros = {}
+
+    function macroelements:new(udim2)
+        local macroframe = Instance.new('Frame', self.background)
+        macroframe.Position = udim2
+        macroframe.BackgroundTransparency = 0.5
+        macroframe.BackgroundColor3 = Color3.new()
+        macroframe.Size = UDim2.fromOffset(50, 50)
+        macroframe.ZIndex = 50
+
+
+        local image = Instance.new('ImageLabel', macroframe)
+        image.BackgroundTransparency = 1
+        image.ImageColor3 = Color3.new(1, 1, 1)
+        image.AnchorPoint = Vector2.new(0.5, 0.5)
+        image.Size = UDim2.fromOffset(35, 35)
+        image.ZIndex = 100
+        image.Image = 'rbxassetid://75356581151796'
+        image.Position = UDim2.fromScale(0.5, 0.5)
+
+        local msholder = Instance.new('Frame', macroframe)
+        msholder.Size = UDim2.fromOffset(42, 2)
+        msholder.Name = 'MsHolder'
+        msholder.BorderSizePixel = 0
+        msholder.Position = UDim2.fromScale(1.16, 0.52)
+        msholder.BackgroundColor3 = Color3.new(1, 1, 1)
+
+        local msbox = Instance.new('TextBox', msholder)
+        msbox.BackgroundTransparency = 1
+        msbox.Position = UDim2.fromScale(0.095, -10)
+        msbox.Size = UDim2.fromOffset(34, 19)
+        msbox.Font = Enum.Font.GothamBold
+        msbox.TextColor3 = Color3.new(1, 1, 1)
+        msbox.Text = tostring(macrocps.value)
+        msbox.TextScaled = true
+        
+        local mstext = Instance.new('TextLabel', msholder)
+        mstext.BackgroundTransparency = 1
+        mstext.Position = UDim2.fromScale(0.095, 1)
+        mstext.Size = UDim2.fromOffset(34, 19)
+        mstext.Font = Enum.Font.GothamBold
+        mstext.TextColor3 = Color3.new(1, 1, 1)
+        mstext.Text = 'ms'
+        mstext.TextScaled = true
+
+        Instance.new('UICorner', macroframe).CornerRadius = UDim.new(1, 0)
+
+        return macroframe
+    end
+
+    local function getMS(ms)
+        return ms > 999 and tonumber(`1.{ms}`) or ms > 9999 and tonumber(`1{ms:split('')[1]}.{ms}`) or (ms > 99 and tonumber(`0.{ms}`) or ms > 9 and tonumber(`0.0{ms}`)) or tonumber(`0.00{ms}`)
+    end
     
-    local function addMacro(name, vec2, togglevec2)
+    local function addMacro(name, positions, togglevec2)
         local toggled = false
         local togglebutton = gui:addbutton(realgui, true, UDim2.fromOffset(55, 55))
         togglebutton.Position = UDim2.fromOffset(togglevec2.X, togglevec2.Y)
@@ -218,15 +370,21 @@ run(function()
                 togglebutton.BackgroundColor3 = toggled and Color3.fromRGB(0, 255, 0) or Color3.new()
                 if toggled then
                     repeat
-                        virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
-                        virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
-                        task.wait(1 / (macrocps.value or 7))
+                        for i,v in positions do
+                            virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
+                            virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                            task.wait(getMS(macrocps.value))
+                        end
+                        task.wait()
                     until not toggled or not togglebutton.Parent or macromode.value ~= 'Toggle'
                 end
             elseif macromode.value == 'No Repeat' then
                 togglebutton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-                virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
-                virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                for i,v in positions do
+                    virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
+                    virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                    task.wait(getMS(macrocps.value))
+                end
                 togglebutton.BackgroundColor3 = Color3.new()
             end
         end)
@@ -242,8 +400,11 @@ run(function()
             repeat
                 if mouseenter and macromode.value == 'Repeat While Holding' then
                     togglebutton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
-                    virtualInputManager:SendMouseButtonEvent(vec2.X, vec2.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                    for i,v in positions do
+                        virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
+                        virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
+                        task.wait(getMS(macrocps.value))
+                    end
                 else
                     togglebutton.BackgroundColor3 = Color3.new()
                 end
@@ -257,6 +418,7 @@ run(function()
             toggle = togglebutton,
             button = {Destroy = function() end}
         })
+        table.clear(macros)
     end
     macro = gui.windows.mods:addmodule({
         name = 'Macro',
@@ -272,15 +434,33 @@ run(function()
                 })
                 return 
             end
-            macroui.Visible = true
+            settingms = true
+            macroelements.background.Visible = true
             gui:toggle(false)
             bloxstrapbutton.Visible = false
-            attempted = 1
         end
     })
     macro:addbutton({
         name = 'Reset All Macros',
         callback = function()
+            gui.win:Dialog({
+                Title = 'Macro',
+                Content = 'Are you sure you want to reset ur macros? (this will reset all ur macro settings)',
+                Buttons = {
+                    {
+                        Title = 'Confirm',
+                        Callback = function()
+                            for i,v in listfiles('bloxstrap/logs/macros') do
+                                delfile(v)
+                            end
+                        end
+                    },
+                    {
+                        Title = 'Cancel',
+                        Callback = function() end
+                    }
+                }
+            })
             for i,v in macroapis do 
                 v.toggle:Destroy()
                 v.button:Destroy()
@@ -288,12 +468,8 @@ run(function()
             table.clear(macroapis)
         end
     })
-    macroshowpos = macro:addtoggle({
-        name = 'Show Macro positions',
-        default = true
-    })
     macrocps = macro:addtextbox({
-        name = 'CPS (Clicks per second)',
+        name = 'Default MS (Miliseconds)',
         number = true,
         default = 50
     })
@@ -312,21 +488,17 @@ run(function()
         end
     end)
     
-    local clickpos = nil
-    inputservice.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if attempted == 1 then
-                attempted += 1
-                clickpos = input.Position
-                recordlabel.Text = 'Select macro\'s click position'
-            elseif attempted >= 2 then
-                macroui.Visible = false
-                recordlabel.Text = 'Select macro\'s toggle position'
-                addMacro(macroname.value, input.Position, clickpos)
-                clickpos = nil
-                attempted = 0
-                gui:toggle()
-                bloxstrapbutton.Visible = true
+    inputservice.InputBegan:Connect(function(input, gp)
+        if gp then return end
+        if (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) then
+            if settingms then
+                table.insert(macros, {
+                    frame = macroelements:new(UDim2.fromOffset(input.Position.X, input.Position.Y)),
+                    clickpos = input.Position
+                })
+            elseif settingms == false then
+                settingms = nil
+                addMacro(macroname.value, macros, input.Position)
             end
         end
     end)
@@ -353,7 +525,7 @@ run(function()
     })
     local list = {}
     for i,v in listfiles('bloxstrap/images') do
-        local new = v:split('/')
+        local new = v:split((identifyexecutor() == 'Swift' and '\\') or '/')
         local real = new[#new]:gsub('images\\', '')
         table.insert(list, real)
     end
@@ -862,24 +1034,17 @@ run(function()
                     UserSettings():GetService('UserGameSettings').MasterVolume = tonumber(generalvolume.value)
                 end
                 setfflag('FFlagAdServiceEnabled', generalingameadvertisement.toggled)
-                setfflag('FFlagDebugRomarkMockingAudioDevices', generalenablevolume.toggled)
             end
         end
     })
     generalvolume = general:addtextbox({
-        name = 'Volume',
+        name = 'Game Volume',
         number = true,
+        default = .2,
         callback = function(val, ca)
             if ca then
                 general:retoggle()
             end
-        end
-    })
-    generalenablevolume = general:addtoggle({
-        name = 'Enable In-game volume',
-        default = true,
-        callback = function()
-            general:retoggle()
         end
     })
     generalingameadvertisement = general:addtoggle({
@@ -889,6 +1054,14 @@ run(function()
         end
     })
 end)
+
+if isfile('setting.bs') then
+    writefile('bloxstrap/logs/blacklisted/'.. readfile('setting.bs').. '.txt', 'zoom')
+    gui:notify({
+        desc = `Attempted to use a fastflag that can\ncrash ur game ({readfile('setting.bs')})`
+    })
+    delfile('setting.bs')
+end
 
 local fastflageditor = nil
 run(function()
@@ -903,7 +1076,7 @@ run(function()
         end
     })
     fastflags = fastflageditor:addtextbox({
-        name = 'FastFlags',
+        name = 'Parse Fast Flags (json)',
         ignore = true,
         callback = function(a, b)
             if b then
@@ -914,28 +1087,31 @@ run(function()
                     oldfflag = {}
                 end
                 for i,v in httpservice:JSONDecode(a) do
-                    oldfflag[i] = v
+                    if not isfile('bloxstrap/logs/blacklisted/'.. i.. '.txt') then
+                        oldfflag[i] = v
+                    end
                 end
                 for i,v in oldfflag do
-                    setfflag(i,v)
-                    fastflageditor:addtextbox({
-                        name = tostring(i),
-                        ignore = true,
-                        default = tostring(v),
-                        callback = function(val, lost)
-                            if val and lost then
-                                local suc, oldfflag = pcall(function()
-                                    return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
-                                end)
-                                if not suc then
-                                    oldfflag = {}
+                    if not isfile('bloxstrap/logs/blacklisted/'.. i.. '.txt') then
+                        fastflageditor:addtextbox({
+                            name = tostring(i),
+                            ignore = true,
+                            default = tostring(v),
+                            callback = function(val, lost)
+                                if val and lost then
+                                    local suc, oldfflag = pcall(function()
+                                        return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
+                                    end)
+                                    if not suc then
+                                        oldfflag = {}
+                                    end
+                                    oldfflag[i] = val
+                                    writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
+                                    setfflag(i, val)
                                 end
-                                oldfflag[i] = val
-                                writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
-                                setfflag(i, val)
                             end
-                        end
-                    })
+                        })
+                    end
                 end
                 writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
                 if not getgenv().noshow then
@@ -973,14 +1149,20 @@ run(function()
 end)
 
 run(function()
-    if not inputservice.KeyboardEnabled then
+    if not inputservice.KeyboardEnabled or pcdebug then
         local button = bloxstrapbutton
+
+        gui.gui:GetPropertyChangedSignal('Enabled'):Connect(function()
+            gui:setdraggable(button, gui.gui.Enabled)
+        end)
+        
+        gui:setdraggable(button, gui.gui.Enabled)
 
         local imagelabel = Instance.new('ImageLabel', button) :: ImageLabel
         imagelabel.Size = UDim2.new(0, 22, 0, 22)
         imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
         imagelabel.BackgroundTransparency = 1
-        imagelabel.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
+        imagelabel.Image = getcustomasset('bloxstrap/images/vibrant bloxstrap.png')
         imagelabel.ImageColor3 = Color3.new(1, 1, 1)
         imagelabel.ZIndex = 2000
     
@@ -1006,14 +1188,21 @@ run(function()
             end
         })
         buttontransparency = legitmode:addtextbox({
-            name = 'Transparency',
+            name = 'Button Transparency',
             number = true,
-            default = inputservice.TouchEnabled and 0 or 1,
+            default = 0,
             callback = function(val)
                 if legitmode.toggled then
                     button.BackgroundTransparency = val
                     imagelabel.ImageTransparency = val
+                    button.UIStroke.Transparency = val 
                 end
+            end
+        })
+        legitmode:addbutton({
+            name = 'Reset Button Position',
+            callback = function()
+                button.Position = UDim2.fromScale(0.99, 0.5)
             end
         })
     end
@@ -1036,26 +1225,27 @@ end)
 run(function()
     local fastflags = 0 :: number
     for i,v in httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json')) do
-        setfflag(i, v)
-        fastflags += 1
-        fastflageditor:addtextbox({
-            name = tostring(i),
-            default = tostring(v),
-            ignore = true,
-            callback = function(val, lost)
-                if val and lost then
-                    local suc, oldfflag = pcall(function()
-                        return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
-                    end)
-                    if not suc then
-                        oldfflag = {}
+        if not isfile('bloxstrap/logs/blacklisted/'.. i.. '.txt') then
+            fastflags += 1
+            fastflageditor:addtextbox({
+                name = tostring(i),
+                default = tostring(v),
+                ignore = true,
+                callback = function(val, lost)
+                    if val and lost then
+                        local suc, oldfflag = pcall(function()
+                            return httpservice:JSONDecode(readfile('bloxstrap/logs/fastflags.json'))
+                        end)
+                        if not suc then
+                            oldfflag = {}
+                        end
+                        oldfflag[i] = val
+                        writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
+                        setfflag(i, val)
                     end
-                    oldfflag[i] = val
-                    writefile('bloxstrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
-                    setfflag(i, val)
                 end
-            end
-        })
+            })
+        end
     end
     if not getgenv().noshow then
         gui:notify({
@@ -1064,6 +1254,98 @@ run(function()
             Duration = 10
         })
     end
+end)
+
+print('RAH')
+
+run(function()
+    local songmodule = nil
+    local songmode = {value =  'Storage'} --> spotify soon
+    local songloop = {toggled = false}
+    local songautoselect = {toggled = false}
+    local songvolume = {value = 0.5}
+
+    local songselected = {value = ''}
+
+    local soundinstance = nil
+
+    local songlist = listfiles('bloxstrap/songs')
+
+    for i,v in songlist do
+        songlist[i] = v:gsub('bloxstrap/songs/', '')
+    end
+
+    print('lmfao')
+
+    songmodule = gui.windows.music:addmodule({
+        name = 'Play Selected Song',
+        callback = function(call)
+            if call then
+                if soundinstance and soundinstance.Parent then
+                    soundinstance:Destroy()
+                end 
+                if songselected.value == '' then
+                    return gui:notify({
+                        title = 'Music Player',
+                        desc = 'Please select a song first!'
+                    })
+                end
+                soundinstance = Instance.new('Sound', workspace)
+                soundinstance.Volume = songvolume.value
+                soundinstance.Looped = songloop.toggled
+                soundinstance.SoundId = getgenv().getcustomasset(`bloxstrap/songs/{songselected.value}`)
+                table.insert(songmodule.cons, soundinstance.Ended:Connect(function()
+                    if not songloop.toggled and songautoselect.toggled then
+                        if soundinstance and soundinstance.Parent then
+                            soundinstance:Destroy()
+                        end 
+                        soundinstance = Instance.new('Sound', workspace)
+                        soundinstance.Volume = songvolume.value
+                        soundinstance.Looped = songloop.toggled
+                        soundinstance.SoundId = getcustomasset(`bloxstrap/songs/{songlist[math.random(1, #songlist)]}`),
+                        soundinstance:Play()
+                    end
+                end))
+                soundinstance:Play()
+            else
+                if soundinstance and soundinstance.Parent then
+                    soundinstance:Destroy()
+                end 
+            end
+        end
+    })
+    songloop = songmodule:addtoggle({
+        name = 'Loop Song',
+        callback = function()
+            songmodule:retoggle()
+        end
+    })
+    songautoselect = songmodule:addtoggle({
+        name = 'Auto Select Song On End',
+        tooltip = 'Plays a random song when the current song ur playing ends.'
+    })
+    songmode = songmodule:adddropdown({
+        name = 'Type',
+        list = {'Storage'},
+        default = 1
+    })
+    songselected = songmodule:adddropdown({
+        name = 'Select Song',
+        list = songlist,
+        callback = function()
+            songmodule:retoggle()
+        end
+    })
+    songvolume = songmodule:addtextbox({
+        name = 'Volume',
+        number = true,
+        default = 0.5,
+        callback = function(val, rea)
+            if rea and soundinstance and soundinstance.Parent then
+                soundinstance.Volume = val
+            end
+        end
+    })
 end)
 
 run(function()
@@ -1076,7 +1358,7 @@ task.delay(3, function()
     gui.configlib:loadconfig(gui) 
     gui:notify({
         Title = 'Bloxstrap',
-        Description = `{inputservice.KeyboardEnabled and 'Press The RShift Key to open & close the ui' or 'Press the button at the middle right to open & close the ui'}.`,
+        Description = `{inputservice.KeyboardEnabled and 'Press The RShift Key to open & close the ui' or 'Press the button at the middle right\n to open & close the ui'}.`,
         Duration = 10
     })
 end)

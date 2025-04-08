@@ -13,11 +13,8 @@ getgenv().assert = function(a, b)
         error(b)
     end
 end
-if isfolder('Bloxstrap') and isfolder('Bloxstrap/sounds') then
+if isfolder('Bloxstrap') and isfolder('Bloxstrap/sounds') or isfolder('bloxstrap') and isfolder('bloxstrap/core') and not isfolder('bloxstrap/core/guis') or isfolder('bloxstrap') and not isfolder('bloxstrap/libraries') then
     delfolder('Bloxstrap')
-end
-if isfolder('bloxstrap') and isfolder('bloxstrap/core') and not isfolder('bloxstrap/core/guis') then
-    delfolder('bloxstrap')
 end
 if not isfolder('bloxstrap') or not isfolder('bloxstrap/logs') then
     makefolder('bloxstrap')
@@ -33,6 +30,9 @@ if not isfile('bloxstrap/selected.txt') then
 end
 if not isfolder('bloxstrap/logs/cache') then
     makefolder('bloxstrap/logs/cache')
+end
+if not isfolder('bloxstrap/logs/blacklisted') then
+    makefolder('bloxstrap/logs/blacklisted')
 end
 assert(setfflag, `Your executor ({identifyexecutor()}) doesn't have the required functions for this to work.`)
 writefile('bloxstrap/logs/error.txt', '')

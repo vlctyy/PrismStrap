@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-index, undefined-global
 --[[
     Bloxstrap: Executor Edition
 

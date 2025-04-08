@@ -26,6 +26,13 @@ local loadfile = function(file, errpath)
     end
 end
 
+local getcustomasset = function(path: string)
+    if not isfile(path) then
+        writefile(path, game:HttpGet(`https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/{path:gsub('bloxstrap/', '')}`))
+    end
+    return getgenv().getcustomasset(path)
+end
+
 local elements = {
     windows = {},
     assets = {
@@ -34,7 +41,8 @@ local elements = {
         mods = 'rbxassetid://126821269590599',
         appearence = 'rbxassetid://98935832640924',
         behaviour = 'rbxassetid://137701271745658',
-        exit = 'rbxassetid://98193757882443'
+        exit = 'rbxassetid://98193757882443',
+        music = getcustomasset('bloxstrap/images/Music.png')
     },
     configs = isfile('bloxstrap/logs/profile.json') and table.clone(httpservice:JSONDecode(readfile('bloxstrap/logs/profile.json'))) or {},
     tweenspeed = 0.2,
@@ -43,10 +51,10 @@ local elements = {
     enabled = true,
     modules = {},
     actualwins = {},
-    configlib = loadfile('bloxstrap/core/config.lua')(),
+    configlib = loadfile('bloxstrap/libraries/config.lua')(),
     gui = nil,
     scale = 1,
-    aprilfool = false--os.date('%m%d') == '0401'
+    aprilfool = os.date('%m%d') == '0401'
 } :: table
 
 elements.randomStr = function(...)
@@ -230,7 +238,7 @@ function elements:clean(cons)
 end
 
 
-for i,v in {'Intergrations', 'Mods', 'Engine Settings', 'Appearence', 'Behaviour'} do
+for i,v in {'Intergrations', 'Mods', 'Engine Settings', 'Appearence', 'Behaviour', 'Music'} do
     local tabname = v:lower():gsub(' ', '')
     local args = {
         Title = getString(v),
@@ -311,6 +319,9 @@ if guitype == 'old' then
                 function fakeapi:setvalue(...)
                     textbox:Set(...)
                 end
+                if args.default ~= nil then 
+                    fakeapi:setvalue(args.default)
+                end
                 return fakeapi
             end
             function api:addtextbox(args)
@@ -330,6 +341,9 @@ if guitype == 'old' then
                 function fakeapi:setvalue(...)
                     textbox:Set(...)
                 end
+                if args.default ~= nil then
+                    fakeapi:setvalue(args.default)
+                end
                 return fakeapi
             end
             return api
@@ -348,7 +362,7 @@ else
                 }
                 elements.actualwins[i]:AddButton({
                     Title = getString(args.name), 
-                    Description = args.subtext,
+                    Description = args.subtext or args.tooltip,
                     Callback = api.callback
                 })
                 return api
@@ -374,7 +388,7 @@ else
                 if not notshow then 
                     moduletoggle = elements.actualwins[i]:AddToggle(args.name, {
                         Title = getString(args.name), 
-                        Description = args.subtext 
+                        Description = args.subtext or args.tooltip 
                     })
                 end
                 function api:setstate(bool)
@@ -490,7 +504,9 @@ else
     end
 end
 
-shared.loaded = {}
+shared.loaded = {
+    gui = elements
+}
 
 function shared.loaded:destruct()
     elements.gui:Destroy()
@@ -507,15 +523,14 @@ function elements:toggle(bool)
         self.gui.Enabled = bool
     end
     for i,v in customelements do
-        if v and v.Parent then
-            v.Enabled = bool
-        end
+        v.Enabled = bool
     end
     self.enabled = bool
 end
 
-function elements:addbutton(parent, pos, size)
+function elements:addbutton(parent, pos, size, text)
     size = size or UDim2.fromOffset(44, 44)
+    text = text or ''
 
     local button = Instance.new('TextButton', parent)
     button.BorderSizePixel = 0
@@ -525,18 +540,61 @@ function elements:addbutton(parent, pos, size)
         button.Text = getString(button.Text)
     end)
     if not pos then
-        button.AnchorPoint = Vector2.new(1, 0.5)
+        button.AnchorPoint = Vector2.new(0.99, 0.5)
     end
     button.BackgroundColor3 = Color3.new()
     button.Size = size
-    button.Position = UDim2.fromScale(1, 0.5)
+    button.Position = UDim2.fromScale(0.99, 0.5)
     button.ZIndex = 2000
     button.TextColor3 = Color3.new(1, 1, 1)
+
+    local index
+
+    local savefunc = function()
+        local suc, profiles = pcall(function()
+            return httpservice:JSONDecode(readfile('bloxstrap/logs/button.json'))
+        end)
     
+        if not suc or type(profiles) ~= 'table' then
+            profiles = {}
+        end
+
+        local position = button.Position
+        local tabpos = {}
+
+        for i,v in tostring(position.X):split(', ') do
+            table.insert(tabpos, tonumber(v))
+        end
+        for i,v in tostring(position.Y):split(', ') do
+            table.insert(tabpos, tonumber(v))
+        end
+    
+        profiles[text] = {
+            pos = tabpos,
+            text = button.Text == '' and text or button.Text
+        }
+        writefile('bloxstrap/logs/button.json', httpservice:JSONEncode(profiles))
+    end
+    
+    local settings = isfile('bloxstrap/logs/button.json') and httpservice:JSONDecode(readfile('bloxstrap/logs/button.json')) or {}
+
+    if settings[text] and settings[text].Text ~= '' then
+        button.Position = UDim2.new(unpack(settings[text].pos))
+        --button.Text = settings[text].text
+    end
+
+    if text == 'bloxstrapbutton' then
+        button.Destroying:Connect(savefunc)
+        
+        button:GetPropertyChangedSignal('Position'):Connect(savefunc)
+        
+        button:GetPropertyChangedSignal('Text'):Connect(savefunc)
+    end
+
     Instance.new('UICorner', button).CornerRadius = UDim.new(1, 0)
     
     local stroke = Instance.new('UIStroke', button)
-    stroke.Thickness = 2
+    stroke.Thickness = 1.5
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Color = Color3.new(1, 1, 1)
     
@@ -546,7 +604,7 @@ function elements:addbutton(parent, pos, size)
 end
 
 function elements:notify(args)
-    local title = args.Title or args.title or 'Bloxstrap'
+    local title = args.Title or args.title or 'Bloxstrap' --> made by my own gui2lua :D
     local description = args.Description or args.Desc or args.desc or args.subtext
     local duration = args.duration or args.Duration or 7
 
@@ -568,10 +626,10 @@ function elements:notify(args)
     Frame_1.BackgroundColor3 = Color3.new(1, 1, 1)
     Frame_1.ClipsDescendants = false
     Frame_1.BorderSizePixel = 0
-    Frame_1.Position = UDim2.fromScale(1.1, 0)
+    Frame_1.Position = UDim2.fromScale(1.5, 0)
     Frame_1.Size = UDim2.fromScale(1, 1)
 
-    tweenservice:Create(Frame_1, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Position = UDim2.fromScale()}):Play()
+    tweenservice:Create(Frame_1, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Position = UDim2.fromScale()}):Play()
 
     local Frame_2 = Instance.new('Frame', Frame_1) 
     Frame_2.BackgroundTransparency = 0.9
@@ -704,8 +762,8 @@ function elements:notify(args)
     TextButton.TextSize = 14
     TextButton.Size = UDim2.fromOffset(20, 20)
     TextButton.MouseButton1Click:Connect(function()
-        tweenservice:Create(Frame_1, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = UDim2.fromScale(1.1, 0)}):Play()
-        task.wait(0.2)
+        tweenservice:Create(Frame_1, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Position = UDim2.fromScale(1.1, 0)}):Play()
+        task.wait(0.25)
         notif:Destroy()
     end)
 
@@ -750,6 +808,10 @@ function elements:notify(args)
     TextLabel_1.AutomaticSize = Enum.AutomaticSize.Y
     TextLabel_1.TextSize = 14
     TextLabel_1.Size = UDim2.new(1, 0, 0, 14)
+
+    if description:find('\n') then
+        Frame_6.Position = UDim2.fromOffset(14, 35)
+    end
     
     local TextLabel_2 = Instance.new('TextLabel', Frame_6) 
     TextLabel_2.Visible = false
