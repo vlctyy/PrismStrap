@@ -132,7 +132,6 @@
         "mouse2click",
         "getgenv",
         "syn",
-        "getrenv"
         "getrenv",
         "canreplicatesignal",
         "replicatesignal",

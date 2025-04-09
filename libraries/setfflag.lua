@@ -20,14 +20,12 @@ local getfflag = getfflag or function()
 end
 local crashTick = tick()
 return function(flag, value)
-    repeat task.wait() until tick() > crashTick
     if isfile('bloxstrap/logs/blacklisted/'.. flag.. '.txt') then
         return shared.loaded.gui:notify({
             desc = `Attempted to use a fastflag that can\ncrash ur game ({flag})`
         })
     end
-    crashTick = tick() + 0.1
-    local fflag = inputservice.KeyboardEnabled and flag or flag:gsub('DFInt', ''):gsub('DFFlag', ''):gsub('FFlag', ''):gsub('FInt', ''):gsub('DFString', ''):gsub('FString', '') :: string
+    local fflag = flag:gsub('DFInt', ''):gsub('DFFlag', ''):gsub('FFlag', ''):gsub('FInt', ''):gsub('DFString', ''):gsub('FString', '') :: string
     if value and tostring(value) then
         value = tostring(value):gsub('"True"', 'true'):gsub('"False"', 'false')
     end
