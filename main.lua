@@ -403,7 +403,7 @@ run(function()
                     for i,v in positions do
                         virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
                         virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
-                        task.wait(getMS(macrocps.value))
+                        task.wait()
                     end
                 else
                     togglebutton.BackgroundColor3 = Color3.new()
