@@ -1,4 +1,5 @@
 if getgenv().whenbloxisntstrapping then return end
+repeat task.wait() until game:IsLoaded()
 local exec, ver = identifyexecutor()
 if exec == 'Delta' and (ver:find('arm64') or ver:find('arm32')) then game.Players.LocalPlayer:Kick('Your executor doesn\'t support bloxstrap, We recommend using [krnl.cat] or other executors.') return end
 print(identifyexecutor())
