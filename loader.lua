@@ -1,5 +1,6 @@
 if getgenv().whenbloxisntstrapping then return end
-if identifyexecutor() == 'Delta' then game.Players.LocalPlayer:Kick('Your executor doesn\'t support bloxstrap, We recommend using [krnl.cat] or other executors.') return end
+--if identifyexecutor() == 'Delta' then game.Players.LocalPlayer:Kick('Your executor doesn\'t support bloxstrap, We recommend using [krnl.cat] or other executors.') return end
+print(identifyexecutor())
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
 end or cloneref :: (any)
