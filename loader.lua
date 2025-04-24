@@ -44,4 +44,6 @@ if getconnections then
     end
 end
 
+loadstring(game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/core/user-update.lua'))()
+
 return loadfile('bloxstrap/main.lua')()
