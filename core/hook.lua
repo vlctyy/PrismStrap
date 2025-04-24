@@ -471,6 +471,9 @@ else
                 function api:setvalue(val)
                     dropdown:SetValue(val)
                 end
+                if args.default ~= nil then
+                    api:setvalue(args.default)
+                end
                 return api
             end
 
@@ -496,6 +499,9 @@ else
                 function api:setvalue(val)
                     box:SetValue(val)
                 end 
+                if args.default ~= nil then
+                    api:setvalue(args.default)
+                end
                 return api
             end
 
@@ -530,6 +536,7 @@ end
 
 function elements:addbutton(parent, pos, size, text)
     size = size or UDim2.fromOffset(44, 44)
+    warn(text)
     text = text or ''
 
     local button = Instance.new('TextButton', parent)
@@ -551,6 +558,7 @@ function elements:addbutton(parent, pos, size, text)
     local index
 
     local savefunc = function()
+        if text ~= 'bloxstrapbutton' then return end
         local suc, profiles = pcall(function()
             return httpservice:JSONDecode(readfile('bloxstrap/logs/button.json'))
         end)
@@ -578,7 +586,7 @@ function elements:addbutton(parent, pos, size, text)
     
     local settings = isfile('bloxstrap/logs/button.json') and httpservice:JSONDecode(readfile('bloxstrap/logs/button.json')) or {}
 
-    if settings[text] and settings[text].Text ~= '' then
+    if text == 'bloxstrapbutton' and settings[text] and settings[text].Text ~= '' then
         button.Position = UDim2.new(unpack(settings[text].pos))
         --button.Text = settings[text].text
     end
@@ -604,7 +612,7 @@ function elements:addbutton(parent, pos, size, text)
 end
 
 function elements:notify(args)
-    local title = args.Title or args.title or 'Bloxstrap' --> made by my own gui2lua :D
+    local title = args.Title or args.title or 'Bloxstrap'
     local description = args.Description or args.Desc or args.desc or args.subtext
     local duration = args.duration or args.Duration or 7
 

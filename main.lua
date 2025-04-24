@@ -37,18 +37,13 @@ local loadfile = function(file, errpath)
     end
 end
 
-if hookfunction then
-    local old = nil
-    old = hookfunction(listfiles, function(file)
-        if identifyexecutor() ~= 'Swift' then
-            return old(file)
-        end
-        local data = old(file)
-        for i,v in data do
-            data[i] = v:gsub('\\', '/')
-        end
-        return data
-    end)
+local listfiles = identifyexecutor() ~= 'AWP' and listfiles or function(folder)
+    if not listfiles then return {} end
+    local rah = listfiles(folder)
+    for i,v in rah do
+        rah[i] = v:gsub('\\', '/')
+    end
+    return rah
 end
 
 local gethui = gethui or function()
@@ -106,6 +101,8 @@ bloxstrapbutton:GetPropertyChangedSignal('Visible'):Connect(function()
         bloxstrapbutton.Visible = false
     end
 end)
+
+getgenv().whenbloxisntstrapping = true
 
 --> inter
 run(function()
@@ -184,7 +181,7 @@ run(function()
     local streamermode = nil
     streamermode = gui.windows.mods:addmodule({
         name = 'Streamer Mode',
-        desc = 'Hides every person in-game\'s username (only works with new chat).',
+        desc = 'Hides every person in-game\'s username.',
         callback = function(call)
             if call then
                 table.insert(streamermode.cons, coregui.ExperienceChat.appLayout.chatWindow.scrollingView.bottomLockedScrollView.RCTScrollView.RCTScrollContentView.ChildAdded:Connect(function(frame)
@@ -227,7 +224,7 @@ run(function()
     local macroname = nil
     local macrocps = nil
 
-    local settingms = false
+    local settingms = nil
 
     local macroelements = {
         background = Instance.new('Frame', realgui)
@@ -358,6 +355,11 @@ run(function()
     end
     
     local function addMacro(name, positions, togglevec2)
+        for i,v in positions do
+            if v.frame and v.frame.Parent then
+                v.frame:Destroy()
+            end
+        end
         local toggled = false
         local togglebutton = gui:addbutton(realgui, true, UDim2.fromOffset(55, 55))
         togglebutton.Position = UDim2.fromOffset(togglevec2.X, togglevec2.Y)
@@ -373,9 +375,9 @@ run(function()
                         for i,v in positions do
                             virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
                             virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
-                            task.wait(getMS(macrocps.value))
+                            task.wait(macrocps.value / (macrocps.value or 7))
                         end
-                        task.wait()
+                        task.wait(1 / (macrocps.value or 7))
                     until not toggled or not togglebutton.Parent or macromode.value ~= 'Toggle'
                 end
             elseif macromode.value == 'No Repeat' then
@@ -383,7 +385,7 @@ run(function()
                 for i,v in positions do
                     virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
                     virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
-                    task.wait(getMS(macrocps.value))
+                    task.wait(macrocps.value / (macrocps.value or 7))
                 end
                 togglebutton.BackgroundColor3 = Color3.new()
             end
@@ -403,9 +405,9 @@ run(function()
                     for i,v in positions do
                         virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, true, lplr.PlayerGui, 1)
                         virtualInputManager:SendMouseButtonEvent(v.clickpos.X, v.clickpos.Y, Enum.UserInputType.MouseButton1.Value, false, lplr.PlayerGui, 1)
-                        task.wait()
+                        task.wait(1 / (macrocps.value or 7))
                     end
-                else
+                elseif macromode.value == 'Repeat While Holding' then
                     togglebutton.BackgroundColor3 = Color3.new()
                 end
                 task.wait(1 / (macrocps.value or 7))
@@ -453,6 +455,11 @@ run(function()
                             for i,v in listfiles('bloxstrap/logs/macros') do
                                 delfile(v)
                             end
+                            for i,v in macroapis do 
+                                v.toggle:Destroy()
+                                v.button:Destroy()
+                            end
+                            table.clear(macroapis)
                         end
                     },
                     {
@@ -461,11 +468,6 @@ run(function()
                     }
                 }
             })
-            for i,v in macroapis do 
-                v.toggle:Destroy()
-                v.button:Destroy()
-            end
-            table.clear(macroapis)
         end
     })
     macrocps = macro:addtextbox({
@@ -497,11 +499,29 @@ run(function()
                     clickpos = input.Position
                 })
             elseif settingms == false then
+                local jsonmacros = {}
+                for i,v in macros do
+                    table.insert(jsonmacros, {
+                        clickpos = {X = v.clickpos.X, Y = v.clickpos.Y}
+                    })
+                end
+                writefile(`bloxstrap/logs/macros/{macroname.value}.json`, httpservice:JSONEncode({
+                    second = jsonmacros,
+                    third = {X = input.Position.X, Y = input.Position.Y}
+                }))
                 settingms = nil
-                addMacro(macroname.value, macros, input.Position)
+                macrolab.Visible = false
+                bloxstrapbutton.Visible = true
+                gui:toggle(true)
+                addMacro(macroname.value, table.clone(macros), input.Position)
             end
         end
     end)
+
+    for i,v in listfiles('bloxstrap/logs/macros') do
+        local res = httpservice:JSONDecode(readfile(v))
+        addMacro(v:gsub('bloxstrap/logs/macros/', ''):gsub('.json', ''), res.second, res.third)
+    end
 end)
 
 run(function()
@@ -742,6 +762,7 @@ run(function()
     local noplrtexture = nil
     local framebuffer = nil
     local framerate = nil
+    local showfpscounter = nil
     local betterlighting = nil
     local noterraintextures = nil
     local texturequality = nil
@@ -764,8 +785,8 @@ run(function()
                     framerate.value = tonumber(framerate.value)
                     setfpscap(framerate.value)
                     setfflag('DFIntTaskSchedulerTargetFps', tostring(framerate.value))
-                    setfflag('FFlagDebugDisplayFPS', framerate.value >= 90 and 'true' or 'false')
                 end
+                setfflag('FFlagDebugDisplayFPS', showfpscounter.toggled and 'true' or 'false')
             end
             local lvl = texturequality.value == 'Medium' and 1 or texturequality.value == 'High' and 2 or 0 
             setfflag('DFFlagTextureQualityOverrideEnabled', (texturequality.value == 'Automatic' or not call) and false or true)
@@ -881,6 +902,12 @@ run(function()
             gamegraphic:retoggle()
         end
     })
+    showfpscounter = gamegraphic:addtoggle({
+        name = 'Show FPS Counter',
+        callback = function()
+            gamegraphic:retoggle()
+        end
+    })
     texturequality = gamegraphic:adddropdown({
         name = 'Texture Quality',
         list = {'Automatic', 'Lowest', 'Low', 'Medium', 'High'},
@@ -937,14 +964,16 @@ run(function()
                     end
                 end
                 if customtopbar.toggled then
-                    if robloxmenu.chat['5']:FindFirstChild('Badge') then
-                        creategradient(robloxmenu.chat['5'].Badge)
-                        robloxmenu.chat['5'].Badge.Text.TextTruncate = 'None'
+                    if robloxmenu.chat:FindFirstChild('5') then
+                        if robloxmenu.chat['5']:FindFirstChild('Badge') then
+                            creategradient(robloxmenu.chat['5'].Badge)
+                            robloxmenu.chat['5'].Badge.Text.TextTruncate = 'None'
+                        end
+                        robloxmenu.chat['5'].ChildAdded:Connect(function(v)
+                            creategradient(v)
+                            v.Text.TextTruncate = 'None'
+                        end)
                     end
-                    robloxmenu.chat['5'].ChildAdded:Connect(function(v)
-                        creategradient(v)
-                        v.Text.TextTruncate = 'None'
-                    end)
                     creategradient(robloxmenu.chat.IntegrationIconFrame.IntegrationIcon)
                     creategradient(robloxmenu.nine_dot.IntegrationIconFrame.IntegrationIcon.Close)
                     creategradient(robloxmenu.nine_dot.IntegrationIconFrame.IntegrationIcon.Overflow)
@@ -1162,7 +1191,7 @@ run(function()
         imagelabel.Size = UDim2.new(0, 22, 0, 22)
         imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
         imagelabel.BackgroundTransparency = 1
-        imagelabel.Image = getcustomasset('bloxstrap/images/vibrant bloxstrap.png')
+        imagelabel.Image = getcustomasset('bloxstrap/images/bloxstrap.png')
         imagelabel.ImageColor3 = Color3.new(1, 1, 1)
         imagelabel.ZIndex = 2000
     
@@ -1256,8 +1285,6 @@ run(function()
     end
 end)
 
-print('RAH')
-
 run(function()
     local songmodule = nil
     local songmode = {value =  'Storage'} --> spotify soon
@@ -1274,8 +1301,6 @@ run(function()
     for i,v in songlist do
         songlist[i] = v:gsub('bloxstrap/songs/', '')
     end
-
-    print('lmfao')
 
     songmodule = gui.windows.music:addmodule({
         name = 'Play Selected Song',

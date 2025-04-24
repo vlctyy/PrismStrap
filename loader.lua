@@ -1,3 +1,4 @@
+if getgenv().whenbloxisntstrapping then return end
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
 end or cloneref :: (any)
@@ -8,13 +9,11 @@ getgenv().error = function(msg, lvl)
         task.spawn(getrenv().error, msg, lvl)
     end
 end
+getgenv().developer = true
 getgenv().assert = function(a, b)
     if not a then
         error(b)
     end
-end
-if isfolder('Bloxstrap') and isfolder('Bloxstrap/sounds') or isfolder('bloxstrap') and isfolder('bloxstrap/core') and not isfolder('bloxstrap/core/guis') or isfolder('bloxstrap') and not isfolder('bloxstrap/libraries') then
-    delfolder('Bloxstrap')
 end
 if not isfolder('bloxstrap') or not isfolder('bloxstrap/logs') then
     makefolder('bloxstrap')
@@ -34,6 +33,16 @@ end
 if not isfolder('bloxstrap/logs/blacklisted') then
     makefolder('bloxstrap/logs/blacklisted')
 end
+if not isfolder('bloxstrap/logs/blacklisted') then
+    makefolder('bloxstrap/logs/blacklisted')
+end
 assert(setfflag, `Your executor ({identifyexecutor()}) doesn't have the required functions for this to work.`)
 writefile('bloxstrap/logs/error.txt', '')
+
+if getconnections then
+    for i,v in getconnections(game:GetService('LogService').MessageOut) do
+        v:Disconnect()
+    end
+end
+
 return loadfile('bloxstrap/main.lua')()

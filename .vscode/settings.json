@@ -135,5 +135,6 @@
         "getrenv",
         "canreplicatesignal",
         "replicatesignal",
-        "hookfunction"
+        "hookfunction",
+        "getconnections"
     ]}

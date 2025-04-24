@@ -1,42 +1,10 @@
-local inputservice = cloneref(game:GetService('UserInputService')) :: UserInputService
-local loadfile = function(file, errpath)
-    if getgenv().developer then
-        errpath = errpath or file:gsub('bloxstrap/', '')
-        return getgenv().loadfile(file, errpath)
-    else
-        local result = request({
-            Url = `https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/{file:gsub('bloxstrap/', '')}`,
-            Method = 'GET'
-        })
-        if result.StatusCode == 200 then
-            return loadstring(result.Body)
-        else
-            error('Invalid file')
-        end
-    end
-end
-local getfflag = getfflag or function()
-    return 'nil'
-end
-local crashTick = tick()
+local k = cloneref(game:GetService('UserInputService')).KeyboardEnabled
 return function(flag, value)
-    if isfile('bloxstrap/logs/blacklisted/'.. flag.. '.txt') then
-        return shared.loaded.gui:notify({
-            desc = `Attempted to use a fastflag that can\ncrash ur game ({flag})`
-        })
-    end
-    local fflag = flag:gsub('DFInt', ''):gsub('DFFlag', ''):gsub('FFlag', ''):gsub('FInt', ''):gsub('DFString', ''):gsub('FString', '') :: string
+    local fflag = k and flag or flag:gsub('DFInt', ''):gsub('DFFlag', ''):gsub('FFlag', ''):gsub('FInt', ''):gsub('DFString', ''):gsub('FString', '') :: string
     if value and tostring(value) then
-        value = tostring(value):gsub('"True"', 'true'):gsub('"False"', 'false')
-    end
-    if identifyexecutor() == 'Delta' then
-        value = tostring(value) == '' and 'nil' or value
+        value = tostring(value):gsub('"True"', 'true'):gsub('"False"', 'false'):gsub('True', 'true'):gsub('False', 'false')
     end
     if getfflag(fflag) ~= nil then
-        writefile('setting.bs', flag)
         setfflag(fflag, tostring(value))
-        if isfile('setting.bs') then
-            delfile('setting.bs')
-        end
     end
 end
