@@ -1,6 +1,8 @@
 local inputservice = cloneref(game:GetService('UserInputService')) :: UserInputService
 return function(flag)
-    if not getfflag then return '' end
+    if not getfflag then 
+        return ''
+    end
     local fflag = flag:gsub('DFInt', ''):gsub('DFFlag', ''):gsub('FFlag', ''):gsub('FInt', ''):gsub('DFString', ''):gsub('FString', '') :: string
     if isfile(`bloxstrap/logs/cache/{fflag}.txt`) then
         local value = readfile(`bloxstrap/logs/cache/{fflag}.txt`) :: string

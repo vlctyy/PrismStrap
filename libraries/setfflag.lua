@@ -1,4 +1,5 @@
 local k = cloneref(game:GetService('UserInputService')).KeyboardEnabled
+local getfflag = getfflag or function() return '' end
 return function(flag, value)
     local fflag = k and flag or flag:gsub('DFInt', ''):gsub('DFFlag', ''):gsub('FFlag', ''):gsub('FInt', ''):gsub('DFString', ''):gsub('FString', '') :: string
     if value and tostring(value) then

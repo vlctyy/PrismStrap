@@ -1100,9 +1100,7 @@ run(function()
         name = 'FastFlag Editor',
         icon = getcustomasset('bloxstrap/images/flag.png'),
         show = false,
-        callback = function()
-            
-        end
+        callback = function() end
     })
     fastflags = fastflageditor:addtextbox({
         name = 'Parse Fast Flags (json)',
@@ -1327,7 +1325,7 @@ run(function()
                         soundinstance = Instance.new('Sound', workspace)
                         soundinstance.Volume = songvolume.value
                         soundinstance.Looped = songloop.toggled
-                        soundinstance.SoundId = getcustomasset(`bloxstrap/songs/{songlist[math.random(1, #songlist)]}`),
+                        soundinstance.SoundId = getgenv().getcustomasset(`bloxstrap/songs/{songlist[math.random(1, #songlist)]}`),
                         soundinstance:Play()
                     end
                 end))
@@ -1379,11 +1377,9 @@ run(function()
     end
 end)
 
-task.delay(3, function() 
-    gui.configlib:loadconfig(gui) 
-    gui:notify({
-        Title = 'Bloxstrap',
-        Description = `{inputservice.KeyboardEnabled and 'Press The RShift Key to open & close the ui' or 'Press the button at the middle right\n to open & close the ui'}.`,
-        Duration = 10
-    })
-end)
+gui.configlib:loadconfig(gui) 
+gui:notify({
+    Title = 'Bloxstrap',
+    Description = `{inputservice.KeyboardEnabled and 'Press The RShift Key to open & close the ui' or 'Press the button at the middle right\n to open & close the ui'}.`,
+    Duration = 10
+})

@@ -1,6 +1,4 @@
 if getgenv().whenbloxisntstrapping then return end
---if identifyexecutor() == 'Delta' then game.Players.LocalPlayer:Kick('Your executor doesn\'t support bloxstrap, We recommend using [krnl.cat] or other executors.') return end
-print(identifyexecutor())
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
 end or cloneref :: (any)
@@ -11,6 +9,7 @@ getgenv().error = function(msg, lvl)
         task.spawn(getrenv().error, msg, lvl)
     end
 end
+getgenv().developer = true
 getgenv().assert = function(a, b)
     if not a then
         error(b)
@@ -31,6 +30,9 @@ end
 if not isfolder('bloxstrap/logs/cache') then
     makefolder('bloxstrap/logs/cache')
 end
+if not isfolder('bloxstrap/songs') then
+    makefolder('bloxstrap/songs')
+end
 if not isfolder('bloxstrap/logs/blacklisted') then
     makefolder('bloxstrap/logs/blacklisted')
 end
@@ -45,7 +47,5 @@ if getconnections then
         v:Disconnect()
     end
 end
-
-loadstring(game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/core/user-update.lua'))()
 
 return loadfile('bloxstrap/main.lua')()
