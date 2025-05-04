@@ -46,7 +46,7 @@ writefile('bloxstrap/logs/error.txt', '')
 
 if getconnections then
     for i,v in getconnections(game:GetService('LogService').MessageOut) do
-        v:Disconnect()
+        v:Disable()
     end
 end
 
