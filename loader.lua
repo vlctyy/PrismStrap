@@ -1,4 +1,4 @@
-if getgenv().whenbloxisntstrapping then return end -- Assuming "whenbloxisntstrapping" is a specific flag name and not a directory
+if getgenv().whenbloxisntstrapping then return end -- Assuming "whenbloxisntstrapping" is a specific flag name and not a directory idek tbh 
 repeat task.wait() until game:IsLoaded()
 local exec, ver = identifyexecutor()
 if exec == 'Delta' and (ver:find('arm64') or ver:find('arm32')) then game.Players.LocalPlayer:Kick('Your executor doesn\'t support PrismStrap, We recommend using [krnl.cat] or other executors.') return end -- Changed user-facing message
