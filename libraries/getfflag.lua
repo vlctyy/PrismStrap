@@ -4,8 +4,8 @@ return function(flag)
         return ''
     end
     local fflag = flag:gsub('DFInt', ''):gsub('DFFlag', ''):gsub('FFlag', ''):gsub('FInt', ''):gsub('DFString', ''):gsub('FString', '') :: string
-    if isfile(`bloxstrap/logs/cache/{fflag}.txt`) then
-        local value = readfile(`bloxstrap/logs/cache/{fflag}.txt`) :: string
+    if isfile(`PrismStrap/logs/cache/{fflag}.txt`) then -- Changed
+        local value = readfile(`PrismStrap/logs/cache/{fflag}.txt`) :: string -- Changed
         return value
     end
     local suc, res = pcall(function() 
@@ -16,7 +16,7 @@ return function(flag)
         error(`"{flag}" is not a valid fastflag`)
         return 'nil'
     else
-        writefile(`bloxstrap/logs/cache/{fflag}.txt`, tostring(res))
+        writefile(`PrismStrap/logs/cache/{fflag}.txt`, tostring(res)) -- Changed
     end
     return res
 end
