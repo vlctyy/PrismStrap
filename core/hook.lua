@@ -1,20 +1,19 @@
-
 if shared.loaded then
     shared.loaded:destruct()
 end
-if readfile('bloxstrap/selected.txt') == 'new' then
-    return loadfile('bloxstrap/core/guis/new.lua')()
+if readfile('PrismStrap/selected.txt') == 'new' then -- Changed
+    return loadfile('PrismStrap/core/guis/new.lua')() -- Changed
 end
 local httpservice = cloneref(game:GetService('HttpService')) :: HttpService
 local tweenservice = cloneref(game:GetService('TweenService')) :: TweenService
 local inputservice = cloneref(game:GetService('UserInputService')) :: UserInputService
 local loadfile = function(file, errpath)
     if getgenv().developer then
-        errpath = errpath or file:gsub('bloxstrap/', '')
+        errpath = errpath or file:gsub('PrismStrap/', '') -- Changed
         return getgenv().loadfile(file, errpath)
     else
         local result = request({
-            Url = `https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/{file:gsub('bloxstrap/', '')}`,
+            Url = `https://raw.githubusercontent.com/vlctyy/PrismStrap/main/{file:gsub('PrismStrap/', '')}`, -- Changed
             Method = 'GET'
         })
         if result.StatusCode ~= 404 then
@@ -28,7 +27,7 @@ end
 
 local getcustomasset = function(path: string)
     if not isfile(path) then
-        writefile(path, game:HttpGet(`https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/{path:gsub('bloxstrap/', '')}`))
+        writefile(path, game:HttpGet(`https://raw.githubusercontent.com/vlctyy/PrismStrap/main/{path:gsub('PrismStrap/', '')}`)) -- Changed
     end
     return getgenv().getcustomasset(path)
 end
@@ -42,16 +41,16 @@ local elements = {
         appearence = 'rbxassetid://98935832640924',
         behaviour = 'rbxassetid://137701271745658',
         exit = 'rbxassetid://98193757882443',
-        music = getcustomasset('bloxstrap/images/Music.png')
+        music = getcustomasset('PrismStrap/images/Music.png') -- Changed
     },
-    configs = isfile('bloxstrap/logs/profile.json') and table.clone(httpservice:JSONDecode(readfile('bloxstrap/logs/profile.json'))) or {},
+    configs = isfile('PrismStrap/logs/profile.json') and table.clone(httpservice:JSONDecode(readfile('PrismStrap/logs/profile.json'))) or {}, -- Changed
     tweenspeed = 0.2,
     saving = false,
     drags = {},
     enabled = true,
     modules = {},
     actualwins = {},
-    configlib = loadfile('bloxstrap/libraries/config.lua')(),
+    configlib = loadfile('PrismStrap/libraries/config.lua')(), -- Changed
     gui = nil,
     scale = 1,
     aprilfool = os.date('%m%d') == '0401'
@@ -73,8 +72,8 @@ elements.randomStr = function(...)
     return ...
 end
 
-local guitype = readfile('bloxstrap/selected.txt')
-local oldgui = loadfile(`bloxstrap/core/guis/{guitype}.lua`)()
+local guitype = readfile('PrismStrap/selected.txt') -- Changed
+local oldgui = loadfile(`PrismStrap/core/guis/{guitype}.lua`)() -- Changed
 elements.gui = oldgui.GUI
 elements.gui.IgnoreGuiInset = true
 
@@ -178,13 +177,13 @@ end
 local window 
 if guitype == 'old' then
     window = oldgui:MakeWindow({
-        Title = getString('Bloxstrap'),
+        Title = getString('PrismStrap'), -- Changed
         SubTitle = ''
     })
 else
     --loadstring(game:HttpGet('https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua'))():SetLibrary(oldgui)
     window = oldgui:CreateWindow({
-        Title = getString('Bloxstrap'),
+        Title = getString('PrismStrap'), -- Changed
         SubTitle = '',
         TabWidth = 160,
         Size = UDim2.fromOffset(600, 450),
@@ -558,9 +557,9 @@ function elements:addbutton(parent, pos, size, text)
     local index
 
     local savefunc = function()
-        if text ~= 'bloxstrapbutton' then return end
+        if text ~= 'prismstrapbutton' then return end -- Changed
         local suc, profiles = pcall(function()
-            return httpservice:JSONDecode(readfile('bloxstrap/logs/button.json'))
+            return httpservice:JSONDecode(readfile('PrismStrap/logs/button.json')) -- Changed
         end)
     
         if not suc or type(profiles) ~= 'table' then
@@ -581,17 +580,17 @@ function elements:addbutton(parent, pos, size, text)
             pos = tabpos,
             text = button.Text == '' and text or button.Text
         }
-        writefile('bloxstrap/logs/button.json', httpservice:JSONEncode(profiles))
+        writefile('PrismStrap/logs/button.json', httpservice:JSONEncode(profiles)) -- Changed
     end
     
-    local settings = isfile('bloxstrap/logs/button.json') and httpservice:JSONDecode(readfile('bloxstrap/logs/button.json')) or {}
+    local settings = isfile('PrismStrap/logs/button.json') and httpservice:JSONDecode(readfile('PrismStrap/logs/button.json')) or {} -- Changed
 
-    if text == 'bloxstrapbutton' and settings[text] and settings[text].Text ~= '' then
+    if text == 'prismstrapbutton' and settings[text] and settings[text].Text ~= '' then -- Changed
         button.Position = UDim2.new(unpack(settings[text].pos))
         --button.Text = settings[text].text
     end
 
-    if text == 'bloxstrapbutton' then
+    if text == 'prismstrapbutton' then -- Changed
         button.Destroying:Connect(savefunc)
         
         button:GetPropertyChangedSignal('Position'):Connect(savefunc)
@@ -612,7 +611,7 @@ function elements:addbutton(parent, pos, size, text)
 end
 
 function elements:notify(args)
-    local title = args.Title or args.title or 'Bloxstrap'
+    local title = args.Title or args.title or 'PrismStrap' -- Changed
     local description = args.Description or args.Desc or args.desc or args.subtext
     local duration = args.duration or args.Duration or 7
 
