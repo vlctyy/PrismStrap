@@ -34,7 +34,7 @@ function configapi:loadconfig(lib)
         task.wait(4)
         repeat
             if tick() > configapi.updateTick then
-                writefile('bloxstrap/logs/profile.json', httpservice:JSONEncode(lib.modules))
+                writefile('PrismStrap/logs/profile.json', httpservice:JSONEncode(lib.modules)) -- Changed
                 configapi.updateTick = tick() + 5
             end
             task.wait()
