@@ -17,14 +17,14 @@ local pcdebug = true
 
 local loadfile = function(file, errpath)
     if getgenv().developer then
-        errpath = errpath or file:gsub('PrismStrap/', '') -- Changed
+        errpath = errpath or file:gsub('PrismStrap/', '')
         if not isfile(file) then
             error(`{file} not found in the workspace`)
         end
         return getgenv().loadfile(file, errpath)
     else
         local result = request({
-            Url = `https://raw.githubusercontent.com/vlctyy/PrismStrap/main/{file:gsub('PrismStrap/', '')}`, -- Changed
+            Url = `https://raw.githubusercontent.com/vlctyy/PrismStrap/main/{file:gsub('PrismStrap/', '')}`,
             Method = 'GET'
         })
         if result.StatusCode ~= 404 then
@@ -66,16 +66,16 @@ macrolab.Font = Enum.Font.GothamMedium
 
 local getcustomasset = function(path: string)
     if not isfile(path) then
-        writefile(path, game:HttpGet(`https://raw.githubusercontent.com/vlctyy/PrismStrap/main/{path:gsub('PrismStrap/', '')}`)) -- Changed
+        writefile(path, game:HttpGet(`https://raw.githubusercontent.com/vlctyy/PrismStrap/main/{path:gsub('PrismStrap/', '')}`))
     end
     return getgenv().getcustomasset(path)
 end
 
-print(getcustomasset('PrismStrap/images/PrismStrap.png')) --> auto installs image -- Changed
+print(getcustomasset('PrismStrap/images/PrismStrap.png')) --> auto installs image
 
-local getfflag = loadfile('PrismStrap/libraries/getfflag.lua')() -- Changed
-local setfflag = loadfile('PrismStrap/libraries/setfflag.lua')() -- Changed
-local gui = loadfile(`PrismStrap/core/hook.lua`)() :: table -- Changed
+local getfflag = loadfile('PrismStrap/libraries/getfflag.lua')()
+local setfflag = loadfile('PrismStrap/libraries/setfflag.lua')()
+local gui = loadfile(`PrismStrap/core/hook.lua`)() :: table
 
 local run = function(func: (() -> ()))
     xpcall(func, warn)
@@ -93,15 +93,15 @@ local displaymessage = function(msg, color, font)
     end
 end
 
-local prismstrapbutton = gui:addbutton(realgui, nil, nil, 'prismstrapbutton') -- Changed variable name and identifier string
-prismstrapbutton.Visible = pcdebug or not inputservice.KeyboardEnabled -- Changed
-prismstrapbutton:GetPropertyChangedSignal('Visible'):Connect(function() -- Changed
-    if prismstrapbutton.Visible and inputservice.KeyboardEnabled and not pcdebug then -- Changed
-        prismstrapbutton.Visible = false -- Changed
+local prismstrapbutton = gui:addbutton(realgui, nil, nil, 'prismstrapbutton')
+prismstrapbutton.Visible = pcdebug or not inputservice.KeyboardEnabled
+prismstrapbutton:GetPropertyChangedSignal('Visible'):Connect(function()
+    if prismstrapbutton.Visible and inputservice.KeyboardEnabled and not pcdebug then
+        prismstrapbutton.Visible = false
     end
 end)
 
-getgenv().whenbloxisntstrapping = true -- Kept as is, as it's a specific flag name
+getgenv().whenprismisntstrapping = true -- Changed
 
 --> inter
 run(function()
@@ -127,7 +127,7 @@ run(function()
                 end))
                 table.insert(logjoin.cons, players.PlayerRemoving:Connect(function(v)
                     local user = v.DisplayName == v.Name and `@{v.Name}` or `{v.DisplayName} (@{v.Name})` :: string
-                    displaymessage(`{user} has joined the experience.`, {255, 255, 0}, Enum.Font.BuilderSansMedium) -- Note: original says "joined" on removing, kept as is.
+                    displaymessage(`{user} has joined the experience.`, {255, 255, 0}, Enum.Font.BuilderSansMedium)
                 end))
             end
         end
@@ -141,7 +141,7 @@ run(function()
     local sounds = nil
     deathsound = gui.windows.mods:addmodule({
         name = 'Death Sound',
-        icon = getcustomasset('PrismStrap/images/sound.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/sound.png'),
         callback = function(call)
             if call then
                 pcall(function()
@@ -151,7 +151,7 @@ run(function()
                             local sound = Instance.new('Sound', workspace)
                             sound.PlayOnRemove = true
                             sound.Volume = 0.6
-                            sound.SoundId = getgenv().getcustomasset(`PrismStrap/audios/{sounds.value}`) -- Changed
+                            sound.SoundId = getgenv().getcustomasset(`PrismStrap/audios/{sounds.value}`)
                             sound:Remove()
                         end
                     end))
@@ -166,8 +166,8 @@ run(function()
         end
     })
     local list = {}
-    for i,v in listfiles('PrismStrap/audios') do -- Changed
-        local new = v:gsub('PrismStrap/audios/', ''):gsub('./', '') -- Changed
+    for i,v in listfiles('PrismStrap/audios') do
+        local new = v:gsub('PrismStrap/audios/', ''):gsub('./', '')
         table.insert(list, new)
     end
     sounds = deathsound:adddropdown({
@@ -438,7 +438,7 @@ run(function()
             settingms = true
             macroelements.background.Visible = true
             gui:toggle(false)
-            prismstrapbutton.Visible = false -- Changed
+            prismstrapbutton.Visible = false
         end
     })
     macro:addbutton({
@@ -451,7 +451,7 @@ run(function()
                     {
                         Title = 'Confirm',
                         Callback = function()
-                            for i,v in listfiles('PrismStrap/logs/macros') do -- Changed
+                            for i,v in listfiles('PrismStrap/logs/macros') do
                                 delfile(v)
                             end
                             for i,v in macroapis do 
@@ -504,22 +504,22 @@ run(function()
                         clickpos = {X = v.clickpos.X, Y = v.clickpos.Y}
                     })
                 end
-                writefile(`PrismStrap/logs/macros/{macroname.value}.json`, httpservice:JSONEncode({ -- Changed
+                writefile(`PrismStrap/logs/macros/{macroname.value}.json`, httpservice:JSONEncode({
                     second = jsonmacros,
                     third = {X = input.Position.X, Y = input.Position.Y}
                 }))
                 settingms = nil
                 macrolab.Visible = false
-                prismstrapbutton.Visible = true -- Changed
+                prismstrapbutton.Visible = true
                 gui:toggle(true)
                 addMacro(macroname.value, table.clone(macros), input.Position)
             end
         end
     end)
 
-    for i,v in listfiles('PrismStrap/logs/macros') do -- Changed
+    for i,v in listfiles('PrismStrap/logs/macros') do
         local res = httpservice:JSONDecode(readfile(v))
-        addMacro(v:gsub('PrismStrap/logs/macros/', ''):gsub('.json', ''), res.second, res.third) -- Changed
+        addMacro(v:gsub('PrismStrap/logs/macros/', ''):gsub('.json', ''), res.second, res.third)
     end
 end)
 
@@ -528,7 +528,7 @@ run(function()
     local crosshairimage = nil
     crosshair = gui.windows.mods:addmodule({
         name = 'Cross hair',
-        icon = getcustomasset('PrismStrap/images/plus.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/plus.png'),
         callback = function(call)
             if call then
                 local imagelabel = Instance.new('ImageLabel', gui.gui)
@@ -536,14 +536,14 @@ run(function()
                 imagelabel.AnchorPoint = Vector2.new(0.5, 0.5)
                 imagelabel.Position = UDim2.new(0.5, 0, 0.5, 0)
                 imagelabel.BackgroundTransparency = 1
-                imagelabel.Image = getgenv().getcustomasset('PrismStrap/images/'..crosshairimage.value) or '' -- Changed
+                imagelabel.Image = getgenv().getcustomasset('PrismStrap/images/'..crosshairimage.value) or ''
                 Instance.new('UIScale', imagelabel).Scale = gui.scale
                 table.insert(crosshair.cons, imagelabel)
             end
         end
     })
     local list = {}
-    for i,v in listfiles('PrismStrap/images') do -- Changed
+    for i,v in listfiles('PrismStrap/images') do
         local new = v:split((identifyexecutor() == 'Swift' and '\\') or '/')
         local real = new[#new]:gsub('images\\', '')
         table.insert(list, real)
@@ -566,7 +566,7 @@ run(function()
     camerasettings = gui.windows.mods:addmodule({
         name = 'Camera',
         show = false,
-        icon = getcustomasset('PrismStrap/images/camera.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/camera.png'),
         callback = function(call)
             if not call and cameramodule then
                 cameramodule.getRotation = old
@@ -612,10 +612,10 @@ run(function()
     gamefont = gui.windows.mods:addmodule({
         name = 'Game Font',
         show = false,
-        icon = getcustomasset('PrismStrap/images/fontico.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/fontico.png'),
         callback = function(call)
             if call and font and font.value ~= 'None' then
-                local val = `PrismStrap/fonts/{font.value}` -- Changed
+                local val = `PrismStrap/fonts/{font.value}`
                 writefile(val:gsub('.ttf', '.json'):gsub('.otf', '.json'), httpservice:JSONEncode({
                     name = 'fontface',
                     faces = {
@@ -657,8 +657,8 @@ run(function()
         end
     })
     local list = {'None'}
-    for i,v in listfiles('PrismStrap/fonts') do -- Changed
-        local new = v:gsub('PrismStrap/fonts/', ''):gsub('./', '') -- Changed
+    for i,v in listfiles('PrismStrap/fonts') do
+        local new = v:gsub('PrismStrap/fonts/', ''):gsub('./', '')
         table.insert(list, new)
     end
     font = gamefont:adddropdown({
@@ -692,7 +692,7 @@ run(function()
     gamelighting = gui.windows.mods:addmodule({
         name = 'Lighting',
         show = false,
-        icon = getcustomasset('PrismStrap/images/lighting.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/lighting.png'),
         callback = function(call)
             if nofog and nofog.toggled then
                 lighting.FogEnd = call and 9e9 or old
@@ -772,7 +772,7 @@ run(function()
     gamegraphic = gui.windows.enginesettings:addmodule({
         name = 'Graphic',
         show = false,
-        icon = getcustomasset('PrismStrap/images/graphic.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/graphic.png'),
         callback = function(call)
             if texturequality == nil then return end
             if call then
@@ -945,7 +945,7 @@ run(function()
     interface = gui.windows.enginesettings:addmodule({
         name = 'Interface Settings',
         show = false,
-        icon = getcustomasset('PrismStrap/images/interface.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/interface.png'),
         callback = function(call)
             if call then
                 if stretchresolution.toggled then
@@ -1014,7 +1014,7 @@ run(function()
     local renderinggraphic = nil
     rendering = gui.windows.enginesettings:addmodule({
         name = 'Rendering',
-        icon = getcustomasset('PrismStrap/images/rendering.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/rendering.png'),
         show = false,
         callback = function(call)
             if call and tonumber(renderinggraphic.value) then
@@ -1054,7 +1054,7 @@ run(function()
     local generalenablevolume = nil
     general = gui.windows.enginesettings:addmodule({
         name = 'General',
-        icon = getcustomasset('PrismStrap/images/general.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/general.png'),
         show = false,
         callback = function(call)
             if call then
@@ -1084,7 +1084,7 @@ run(function()
 end)
 
 if isfile('setting.bs') then
-    writefile('PrismStrap/logs/blacklisted/'.. readfile('setting.bs').. '.txt', 'zoom') -- Changed
+    writefile('PrismStrap/logs/blacklisted/'.. readfile('setting.bs').. '.txt', 'zoom')
     gui:notify({
         desc = `Attempted to use a fastflag that can\ncrash ur game ({readfile('setting.bs')})`
     })
@@ -1097,7 +1097,7 @@ run(function()
     local oldfastflagsvalues = {}
     fastflageditor = gui.windows.enginesettings:addmodule({
         name = 'FastFlag Editor',
-        icon = getcustomasset('PrismStrap/images/flag.png'), -- Changed
+        icon = getcustomasset('PrismStrap/images/flag.png'),
         show = false,
         callback = function() end
     })
@@ -1107,39 +1107,39 @@ run(function()
         callback = function(a, b)
             if b then
                 local suc, oldfflag = pcall(function()
-                    return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json')) -- Changed
+                    return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json'))
                 end)
                 if not suc then
                     oldfflag = {}
                 end
                 for i,v in httpservice:JSONDecode(a) do
-                    if not isfile('PrismStrap/logs/blacklisted/'.. i.. '.txt') then -- Changed
+                    if not isfile('PrismStrap/logs/blacklisted/'.. i.. '.txt') then
                         oldfflag[i] = v
                     end
                 end
                 for i,v in oldfflag do
-                    if not isfile('PrismStrap/logs/blacklisted/'.. i.. '.txt') then -- Changed
+                    if not isfile('PrismStrap/logs/blacklisted/'.. i.. '.txt') then
                         fastflageditor:addtextbox({
                             name = tostring(i),
                             ignore = true,
                             default = tostring(v),
                             callback = function(val, lost)
                                 if val and lost then
-                                    local suc, oldfflag_cb = pcall(function() -- Renamed inner oldfflag to avoid scope confusion
-                                        return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json')) -- Changed
+                                    local suc_cb, oldfflag_cb = pcall(function()
+                                        return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json'))
                                     end)
-                                    if not suc then
+                                    if not suc_cb then
                                         oldfflag_cb = {}
                                     end
                                     oldfflag_cb[i] = val
-                                    writefile('PrismStrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag_cb)) -- Changed
+                                    writefile('PrismStrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag_cb))
                                     setfflag(i, val)
                                 end
                             end
                         })
                     end
                 end
-                writefile('PrismStrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag)) -- Changed
+                writefile('PrismStrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag))
                 if not getgenv().noshow then
                     gui:notify({
                         desc = 'Successfully entered fastflags.'
@@ -1158,7 +1158,7 @@ run(function()
                     {
                         Title = 'Confirm',
                         Callback = function()
-                            writefile('PrismStrap/logs/fastflags.json', '{}') -- Changed
+                            writefile('PrismStrap/logs/fastflags.json', '{}')
                             task.delay(1, function()
                                 game:Shutdown()
                             end)
@@ -1176,7 +1176,7 @@ end)
 
 run(function()
     if not inputservice.KeyboardEnabled or pcdebug then
-        local button = prismstrapbutton -- Changed
+        local button = prismstrapbutton
 
         gui.gui:GetPropertyChangedSignal('Enabled'):Connect(function()
             gui:setdraggable(button, gui.gui.Enabled)
@@ -1188,7 +1188,7 @@ run(function()
         imagelabel.Size = UDim2.new(0, 22, 0, 22)
         imagelabel.Position = UDim2.new(0.25, 0, 0.25, 0)
         imagelabel.BackgroundTransparency = 1
-        imagelabel.Image = getcustomasset('PrismStrap/images/PrismStrap.png') -- Changed
+        imagelabel.Image = getcustomasset('PrismStrap/images/PrismStrap.png')
         imagelabel.ImageColor3 = Color3.new(1, 1, 1)
         imagelabel.ZIndex = 2000
     
@@ -1240,9 +1240,9 @@ run(function()
         name = 'Theme',
         list = {'Fluent'},
         callback = function(val)
-            if val and val:lower() ~= readfile('PrismStrap/selected.txt'):lower() then -- Changed
-                writefile('PrismStrap/selected.txt', val:lower()) -- Changed
-                loadfile('PrismStrap/loader.lua')() -- Changed
+            if val and val:lower() ~= readfile('PrismStrap/selected.txt'):lower() then
+                writefile('PrismStrap/selected.txt', val:lower())
+                loadfile('PrismStrap/loader.lua')()
             end
         end
     })
@@ -1250,10 +1250,10 @@ end)
 
 run(function()
     local fastflags = 0 :: number
-    local suc_decode, decoded_fflags = pcall(function() return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json')) end) -- Changed
+    local suc_decode, decoded_fflags = pcall(function() return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json')) end)
     if suc_decode and typeof(decoded_fflags) == "table" then
         for i,v in decoded_fflags do
-            if not isfile('PrismStrap/logs/blacklisted/'.. i.. '.txt') then -- Changed
+            if not isfile('PrismStrap/logs/blacklisted/'.. i.. '.txt') then
                 fastflags += 1
                 fastflageditor:addtextbox({
                     name = tostring(i),
@@ -1262,13 +1262,13 @@ run(function()
                     callback = function(val, lost)
                         if val and lost then
                             local suc_cb, oldfflag_cb = pcall(function()
-                                return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json')) -- Changed
+                                return httpservice:JSONDecode(readfile('PrismStrap/logs/fastflags.json'))
                             end)
                             if not suc_cb then
                                 oldfflag_cb = {}
                             end
                             oldfflag_cb[i] = val
-                            writefile('PrismStrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag_cb)) -- Changed
+                            writefile('PrismStrap/logs/fastflags.json', httpservice:JSONEncode(oldfflag_cb))
                             setfflag(i, val)
                         end
                     end
@@ -1278,7 +1278,7 @@ run(function()
     end
     if not getgenv().noshow then
         gui:notify({
-            Title = 'PrismStrap', -- Changed
+            Title = 'PrismStrap',
             Description = `Successfully loaded a total of {fastflags} fastflags.`,
             Duration = 10
         })
@@ -1296,10 +1296,10 @@ run(function()
 
     local soundinstance = nil
 
-    local songlist = listfiles('PrismStrap/songs') -- Changed
+    local songlist = listfiles('PrismStrap/songs')
 
     for i,v in songlist do
-        songlist[i] = v:gsub('PrismStrap/songs/', '') -- Changed
+        songlist[i] = v:gsub('PrismStrap/songs/', '')
     end
 
     songmodule = gui.windows.music:addmodule({
@@ -1318,7 +1318,7 @@ run(function()
                 soundinstance = Instance.new('Sound', workspace)
                 soundinstance.Volume = songvolume.value
                 soundinstance.Looped = songloop.toggled
-                soundinstance.SoundId = getgenv().getcustomasset(`PrismStrap/songs/{songselected.value}`) -- Changed
+                soundinstance.SoundId = getgenv().getcustomasset(`PrismStrap/songs/{songselected.value}`)
                 table.insert(songmodule.cons, soundinstance.Ended:Connect(function()
                     if not songloop.toggled and songautoselect.toggled then
                         if soundinstance and soundinstance.Parent then
@@ -1327,7 +1327,7 @@ run(function()
                         soundinstance = Instance.new('Sound', workspace)
                         soundinstance.Volume = songvolume.value
                         soundinstance.Looped = songloop.toggled
-                        soundinstance.SoundId = getgenv().getcustomasset(`PrismStrap/songs/{songlist[math.random(1, #songlist)]}`), -- Changed
+                        soundinstance.SoundId = getgenv().getcustomasset(`PrismStrap/songs/{songlist[math.random(1, #songlist)]}`),
                         soundinstance:Play()
                     end
                 end))
@@ -1375,13 +1375,13 @@ end)
 
 run(function()
     if coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame:FindFirstChild('p_7670822523') then
-        coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame.p_7670822523.ChildrenFrame.NameFrame.BGFrame.OverlayFrame.PlayerIcon.Image = getcustomasset('PrismStrap/images/PrismStrap.png') -- Changed
+        coregui.PlayerList.Children.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame.p_7670822523.ChildrenFrame.NameFrame.BGFrame.OverlayFrame.PlayerIcon.Image = getcustomasset('PrismStrap/images/PrismStrap.png')
     end
 end)
 
 gui.configlib:loadconfig(gui) 
 gui:notify({
-    Title = 'PrismStrap', -- Changed
+    Title = 'PrismStrap',
     Description = `{inputservice.KeyboardEnabled and 'Press The RShift Key to open & close the ui' or 'Press the button at the middle right\n to open & close the ui'}.`,
     Duration = 10
 })
