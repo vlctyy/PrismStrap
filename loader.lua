@@ -1,7 +1,7 @@
 if getgenv().whenprismisntstrapping then return end -- Changed
 repeat task.wait() until game:IsLoaded()
 local exec, ver = identifyexecutor()
-if exec == 'Delta' and (ver:find('arm64') or ver:find('arm32')) then game.Players.LocalPlayer:Kick('Your executor doesn\'t support PrismStrap, We recommend using [krnl.cat] or other executors.') return end
+if exec == 'Delta' and (ver:find('arm64') or ver:find('arm32')) then game.Players.LocalPlayer:Kick('Your executor doesn\'t support PrismStrap, We recommend using [krnl.cat] or other executors.') return end -- Delta fix your shit so I dont have to do this gang
 local cloneref = (table.find({'Xeno', 'Fluxus'}, identifyexecutor(), 1) or not cloneref) and function(ref)
     return ref
 end or cloneref :: (any)
