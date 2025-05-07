@@ -136,5 +136,8 @@
         "canreplicatesignal",
         "replicatesignal",
         "hookfunction",
-        "getconnections"
+        "getconnections",
+        "getgc",
+        "getthreadidentity",
+        "setthreadidentity"
     ]}
