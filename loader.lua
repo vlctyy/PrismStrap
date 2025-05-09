@@ -37,7 +37,7 @@ end
 if not isfolder('PrismStrap/logs/blacklisted') then -- Changed
     makefolder('PrismStrap/logs/blacklisted') -- Changed
 end
-if not isfolder('PrismStrap/logs/blacklisted') then -- Changed (duplicate line from original script)
+if not isfolder('PrismStrap/logs/blacklisted') then -- Changed (duped line from original script) why tf was it even duped
     makefolder('PrismStrap/logs/blacklisted') -- Changed
 end
 assert(setfflag, `Your executor ({identifyexecutor()}) doesn't have the required functions for this to work.`)
